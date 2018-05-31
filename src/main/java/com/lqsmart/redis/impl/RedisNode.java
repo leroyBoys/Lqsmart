@@ -119,11 +119,11 @@ class RedisNode extends Node<LQRedisConnection> {
                 jedis.subscribe(new JedisPubSub() {
                     @Override
                     public void onMessage(String channel, String message) {
-                        String[] array = message.split(" ");
+                        String[] sourceArray = message.split(" ");
                         List<String> list = new LinkedList<>();
                         String str;
-                        for(int i = 0;i<array.length;i++){
-                            str = array[i].trim();
+                        for(int i = 0;i<sourceArray.length;i++){
+                            str = sourceArray[i].trim();
                             if(str.isEmpty()){
                                 continue;
                             }
@@ -132,13 +132,10 @@ class RedisNode extends Node<LQRedisConnection> {
                                 continue;
                             }
 
-                        /*    if(str.endsWith(".")){
-                                str = str.substring(0,str.length()-1);
-                            }*/
                             list.add(str);
                         }
 
-                        array = new String[list.size()];
+                        String[] array = new String[list.size()];
                         list.toArray(array);
 
                         LqLogUtil.info("Sentinel channel:" + channel + " " + host + ":" + port + " published: " + Arrays.toString(array) + ".");
@@ -149,10 +146,16 @@ class RedisNode extends Node<LQRedisConnection> {
                             node.down(array[0]+":"+array[1]);
                         }else if(channel.equals("-sdown")){
                             node.reboot(array[0]+":"+array[1]);
+                        }else if(channel.equals("+reboot")){
+                            if(!sourceArray[0].equals("master")){
+                                return;
+                            }
+                            node.reboot(array[0]+":"+array[1]);
+                            node.chownMaster(array[0]+":"+array[1]);
                         }
 
                     }
-                }, "+switch-master","+sdown","-sdown");
+                }, "+switch-master","+sdown","-sdown","+reboot");
             } catch (JedisConnectionException e) {
                 e.printStackTrace();
                 running.set(false);

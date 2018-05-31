@@ -66,16 +66,17 @@ public class Test {
         redisConn.getRandomSlave("6378").get(keyss);
 
         while (true){
+            long ll = 200l;
             try {
                 redisConn.getMaster("6378").set(keyss,keyss+new Random().nextInt(222));
                 redisConn.getMaster("6378").get(keyss);
                 System.out.println(redisConn.getRandomSlave("6378").get(keyss));
             }catch (Exception e){
-                e.printStackTrace();
                 System.out.println("===>error:"+e.getMessage());
+                ll = 60000;
             }
 
-            Thread.sleep(200);
+            Thread.sleep(ll);
         }
     }
 }
