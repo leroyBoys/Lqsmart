@@ -8,5 +8,69 @@
     <artifactId>Lqsmart</artifactId>
     <version>1.0</version>
 
+    <properties>
+        <junit.version>4.12</junit.version>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>2.9.0</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/mysql/mysql-connector-java -->
+        <dependency>
+            <groupId>mysql</groupId>
+            <artifactId>mysql-connector-java</artifactId>
+            <version>8.0.11</version>
+        </dependency>
+
+
+        <!-- druid(特点：阿里巴巴开发，功能全面，只比hikariCP略弱，比其他线程池c3p0等都要效率高，数组存在实现) 线程池 begin-->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid</artifactId>
+            <version>1.1.9</version>
+        </dependency>
+
+        <!-- druid 线程池 over-->
+
+        <!-- hikariCP（利用threadlocal和case减少锁的竞争，目前效率最高，特别注意内存使用销毁） 线程池 begin-->
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+            <version>3.1.0</version>
+        </dependency>
+        <!-- hikariCP 线程池 over-->
+        <dependency>
+            <groupId>c3p0</groupId>
+            <artifactId>c3p0</artifactId>
+            <version>0.9.1.2</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/com.dyuproject.protostuff/protostuff-core -->
+        <dependency>
+            <groupId>com.dyuproject.protostuff</groupId>
+            <artifactId>protostuff-core</artifactId>
+            <version>1.1.3</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.dyuproject.protostuff/protostuff-runtime -->
+        <dependency>
+            <groupId>com.dyuproject.protostuff</groupId>
+            <artifactId>protostuff-runtime</artifactId>
+            <version>1.1.3</version>
+        </dependency>
+
+    </dependencies>
 
 </project>
