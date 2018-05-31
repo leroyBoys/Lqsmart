@@ -14,12 +14,6 @@ import java.util.Random;
  */
 public class Test {
 
-    public void mai(){
-
-        String str ="Ssdfsdxx";
-        System.out.println(str.matches("(.*)(dd|sds|Ssd)(.*)"));
-    }
-
     public void test() throws Exception {
         LQStart.scan("com");
 
@@ -28,7 +22,6 @@ public class Test {
     //    LqJdbcPool jdbcPool = new LqJdbcPool(LqJdbcPool.DataSourceType.Hikari, LqUtil.loadProperty("hikari_db.properties"));
         LQDataSource jdbcPool = LQStart.getJdbcManager().getMaster();
         String sql = "SELECT test_data.* ,test1.`id` AS tid,test1.`name` AS tname FROM `test_data` RIGHT JOIN test1 ON test_data.`id` = test1.`id`";
-
 
         List<TestData> testDataList = jdbcPool.ExecuteQueryList(TestData.class,sql);
 
@@ -49,7 +42,7 @@ public class Test {
     }
 
     @org.junit.Test
-    public void testJdkReflect() throws Exception {
+    public void test2() throws Exception {
         LQStart.scan("com");
         String sql = "SELECT test_data.* ,test1.`id` AS tid,test1.`name` AS tname FROM `test_data` RIGHT JOIN test1 ON test_data.`id` = test1.`id`\n";
         LQStart.init(LqUtil.loadProperty("db.properties"));
