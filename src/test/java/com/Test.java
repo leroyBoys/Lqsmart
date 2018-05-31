@@ -41,7 +41,7 @@ public class Test {
         System.out.println(testData.getName()+"   "+testData.getId());
     }
 
-    @org.junit.Test
+    //@org.junit.Test
     public void test2() throws Exception {
         LQStart.scan("com");
         String sql = "SELECT test_data.* ,test1.`id` AS tid,test1.`name` AS tname FROM `test_data` RIGHT JOIN test1 ON test_data.`id` = test1.`id`\n";
