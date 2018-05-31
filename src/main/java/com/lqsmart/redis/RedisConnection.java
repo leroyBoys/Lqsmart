@@ -1461,6 +1461,26 @@ public class RedisConnection implements LQConntion {
     }
 
     /**
+     * 随机返回Set中 count个成员 Set操作
+     * @param key
+     * @param count
+     * @return
+     */
+    public List<String> srandmember(String key, int count) {
+        Jedis jedis = null;
+        List<String> res = null;
+        try {
+            jedis = jedisPool.getResource();
+            res = jedis.srandmember(key,count);
+        } catch (Exception e) {
+            logException(e);
+        } finally {
+            returnResource(jedisPool, jedis);
+        }
+        return res;
+    }
+
+    /**
      * <p>通过key获取set中所有的value</p>
      *
      * @param key
@@ -1628,6 +1648,48 @@ public class RedisConnection implements LQConntion {
         try {
             jedis = jedisPool.getResource();
             res = jedis.zrevrange(key, start, end);
+        } catch (Exception e) {
+            logException(e);
+        } finally {
+            returnResource(jedisPool, jedis);
+        }
+        return res;
+    }
+
+    /**
+     * 返回指定位置的集合元素,0为第一个元素，-1为最后一个元素 ZSet操作
+     * @param key
+     * @param start
+     * @param end
+     * @return
+     */
+    public Set<String> zrange(String key, int start, int end) {
+        Jedis jedis = null;
+        Set<String> res = null;
+        try {
+            jedis = jedisPool.getResource();
+            return jedis.zrange(key,start,end);
+        } catch (Exception e) {
+            logException(e);
+        } finally {
+            returnResource(jedisPool, jedis);
+        }
+        return res;
+    }
+
+    /**
+     * 返回指定位置的集合元素,0为第一个元素，-1为最后一个元素 ZSet操作
+     * @param key
+     * @param start
+     * @param end
+     * @return
+     */
+    public Set<byte[]> zrange(byte[] key, int start, int end) {
+        Jedis jedis = null;
+        Set<byte[]> res = null;
+        try {
+            jedis = jedisPool.getResource();
+            return jedis.zrange(key,start,end);
         } catch (Exception e) {
             logException(e);
         } finally {
