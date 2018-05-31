@@ -1,8 +1,15 @@
 # Lqsmart
+框架描述:
+        Lqsmart是一款基于注解方式的db框架，支持多节点，主从自动切换，故障上下线服务器；支持慢查询指定服务器，支持读写分离
+        （暂时不支持分库分表/切片）
+        db:支持实体类的直接导入数据库(关联表数据库暂时不支持导入，需要自行sql)和导出数据库（支持，一对多，一对一等情况，需要自己写sql与注解DBRelations结合使用）
+        redis:持实体类的直接导入数据库和导出数据库;两种方式：map:即hash结构，Serialize二进制，本框架使用protostuff做转换，所以需要protostuff相关jar包
+        
 环境：jdk1.8 以上
        redis:4.0
        mysql:5.6
        如果需要jdk1.7支持，需要重新编译，并且相关第三方jar注意环境支持
+实列：参考test
 db:
  注解：LQDBTable 设置表名（默认当前classname）
 

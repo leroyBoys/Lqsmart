@@ -3,6 +3,7 @@ package com.lqsmart.mysql.impl;
 import com.lqsmart.core.LQStart;
 import com.lqsmart.entity.LQConntion;
 import com.lqsmart.entity.StartInitCache;
+import com.lqsmart.mysql.DbCallBack;
 import com.lqsmart.mysql.SqlDataSource;
 import com.lqsmart.mysql.compiler.ColumInit;
 import com.lqsmart.mysql.compiler.FieldGetProxy;
@@ -363,7 +364,6 @@ public class LQDataSource implements SqlDataSource,LQConntion {
      * @return
      */
     public Object ExecuteQueryOnlyOneValue(String cmd, Object... p) {
-        //       LqLogUtil.log("cmd:" + cmd);
         Connection cn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -510,6 +510,26 @@ public class LQDataSource implements SqlDataSource,LQConntion {
                 return null;
             }
             return getJdbcColumsArray(rs,cls,cmd,dbTable).doExuteOnlyOne(dbTable,rs,cls);
+        } catch (Exception e) {
+            LqLogUtil.error(this.getClass(),e);
+        } finally {
+            this.close(ps, cn, rs);
+        }
+        return null;
+    }
+
+    public <T> T ExecuteQuery(String sql, DbCallBack<T> callBack) {
+        System.out.println("cmd:" + sql);
+        Connection cn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            cn = getConnection();
+
+            ps = cn.prepareStatement(sql);
+
+            rs =  ps.executeQuery();
+            return callBack.doInPreparedStatement(rs);
         } catch (Exception e) {
             LqLogUtil.error(this.getClass(),e);
         } finally {
