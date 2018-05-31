@@ -1,5 +1,8 @@
 # Lqsmart
-
+环境：jdk1.8 以上
+       redis:4.0
+       mysql:5.6
+       如果需要jdk1.7支持，需要重新编译，并且相关第三方jar注意环境支持
 db:
  注解：LQDBTable 设置表名（默认当前classname）
 
