@@ -188,13 +188,12 @@ public class LQDataSource implements SqlDataSource,LQConntion {
      * @param tableName
      * @param datas
      * @param columNames 要插入数据的列名集合(与columValues 顺序对应)
-     * @param columValues 要插入数据的列名对应值（或者函数或者固定值）集合(与columValues 顺序对应)
      * @param commitLimitCount 最大提交数量（根据mysql.cnf中 max_allowed_packet调整）如果小于等于0则为默认5000
      * @param
      * @return
      */
-    public  boolean insertBatch(String tableName,List<Map<String,String>> datas,String[] columNames,String[] columValues,int commitLimitCount) {
-        return ExecuteUpdates(lqDbType.getDbExecutor().insertBatchSql(tableName,datas,columNames,columValues,commitLimitCount));
+    public  boolean insertBatch(String tableName,List<Map<String,String>> datas,String[] columNames,int commitLimitCount) {
+        return ExecuteUpdates(lqDbType.getDbExecutor().insertBatchSql(tableName,datas,columNames,commitLimitCount));
     }
 
     public boolean ExecuteUpdates(List<String> cmds) {
@@ -441,7 +440,6 @@ public class LQDataSource implements SqlDataSource,LQConntion {
     }
 
     public <T> T ExecuteQuery(String sql, DbCallBack<T> callBack) {
-        System.out.println("cmd:" + sql);
         Connection cn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
