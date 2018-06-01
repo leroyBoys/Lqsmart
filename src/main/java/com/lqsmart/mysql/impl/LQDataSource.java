@@ -23,6 +23,7 @@ public class LQDataSource implements SqlDataSource,LQConntion {
     private String url;
     private final static Map<String,JdbcColumsArray> cmd_jdbcColumsArrayCache = new HashMap<>();
     private DataSource dds;
+    private LQDbType lqDbType;
     private boolean isConnectioned;
     protected LQDataSource(Properties properties){
         init(properties);
@@ -31,6 +32,10 @@ public class LQDataSource implements SqlDataSource,LQConntion {
     @Override
     public void reLoad() {
 
+    }
+
+    public LQDbType getLqDbType() {
+        return lqDbType;
     }
 
     private void init(Properties properties){
@@ -68,6 +73,10 @@ public class LQDataSource implements SqlDataSource,LQConntion {
                     LqLogUtil.error(k+"  "+v+"  error");
                     ex.printStackTrace();
                 }
+            }
+
+            if(!this.chekLqdbType(properties)){
+                LqLogUtil.error("未找到对应的数据库类型,不能完成实体类与数据的自动操作，需要自行编写sql，当前自动操作只支持"+Arrays.toString(LQDbType.values()));
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -118,6 +127,34 @@ public class LQDataSource implements SqlDataSource,LQConntion {
         return count<=0;
     }
 
+    private boolean chekLqdbType(Properties properties){
+        for(Object obj:properties.keySet()){
+            if (!(obj instanceof String)) {
+                continue;
+            }
+            String key = ((String) obj);
+            String str = key.toLowerCase();
+            if(str.contains("url")){
+                String value = properties.getProperty(key).toLowerCase();
+                str = value.substring(0,value.lastIndexOf(':'));
+            }else  if(str.contains("driverclass")){
+                String value = properties.getProperty(key).toLowerCase();
+                str = value;
+            }else {
+                continue;
+            }
+
+            for(LQDbType dbType:LQDbType.values()){
+                if(str.contains(dbType.getAutoMark())){
+                    this.lqDbType = dbType;
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
     private boolean testConnection(){
         Connection cn = null;
         try {
@@ -156,64 +193,8 @@ public class LQDataSource implements SqlDataSource,LQConntion {
      * @param
      * @return
      */
-    public  boolean InsertBatch(String tableName,List<Map<String,String>> datas,String[] columNames,String[] columValues,int commitLimitCount) {
-        if(commitLimitCount <= 0){
-            commitLimitCount = this.getDefaultLimitCount();
-        }
-
-        StringBuilder sb = new StringBuilder("INSERT INTO  ");
-        sb.append(tableName).append(" (");
-        for(int i = 0;i<columNames.length;i++){
-            if(i != 0){
-                sb.append(",");
-            }
-            sb.append("`").append(columNames[i]).append("`");
-        }
-        sb.append(") values ");
-        String sql = sb.toString();
-
-        String str;
-        List<String> sqls = new LinkedList<>();
-        int i = 0;
-        for(Map<String,String> map:datas){
-            if(i++ != 0){
-                sb.append(",");
-            }
-
-            sb.append("(");
-            for(int j = 0;j<columNames.length;j++){
-                if(j != 0){
-                    sb.append(",");
-                }
-
-                str = columValues[j];
-                if(str.endsWith("()")){
-                    sb.append(str);
-                    continue;
-                }
-
-                sb.append("'");
-                str = map.get(str);
-                if(str == null){
-                    str = columValues[j];
-                }
-                sb.append(str);
-                sb.append("'");
-            }
-            sb.append(")");
-
-            if(i > commitLimitCount){
-                sqls.add(sb.toString());
-                sb=new StringBuilder(sql);
-                i=0;
-            }
-        }
-
-        if(i > 0){
-            sqls.add(sb.toString());
-        }
-
-        return ExecuteUpdates(sqls);
+    public  boolean insertBatch(String tableName,List<Map<String,String>> datas,String[] columNames,String[] columValues,int commitLimitCount) {
+        return ExecuteUpdates(lqDbType.getDbExecutor().insertBatchSql(tableName,datas,columNames,columValues,commitLimitCount));
     }
 
     public boolean ExecuteUpdates(List<String> cmds) {
@@ -273,12 +254,12 @@ public class LQDataSource implements SqlDataSource,LQConntion {
             Object id = table.getColumGetMap().get(table.getIdColumName()).formatToDbData(instance);
             if(id != null && Long.valueOf(id.toString())>0){
 
-                sql = updateSql(instance,table);
+                sql = lqDbType.getDbExecutor().updateSql(instance,table);
                 cn = getConnection();
                 ps = cn.prepareStatement(sql);
                 return ps.executeUpdate()>0;
             }else {
-                sql = insertSql(instance,table);
+                sql = lqDbType.getDbExecutor().insertSql(instance,table);
             }
             cn = getConnection();
             ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
@@ -296,65 +277,6 @@ public class LQDataSource implements SqlDataSource,LQConntion {
             close(ps, cn, rs);
         }
         return false;
-    }
-
-    private String insertSql(Object instance,DBTable table) {
-        StringBuilder sql = new StringBuilder();
-        StringBuilder names = new StringBuilder();
-        StringBuilder values = new StringBuilder();
-        sql.append("insert into ").append(table.getName());
-        names.append("  ( ");
-        values.append("  ( ");
-        int i = 0;
-        Object object;
-        for(Map.Entry<String,FieldGetProxy.FieldGet> entry:table.getColumGetMap().entrySet()){
-            if(entry.getKey() == table.getIdColumName()){
-                continue;
-            }
-
-            if(i > 0){
-                names.append(" , ");
-                values.append(" , ");
-            }
-            names.append("`").append(entry.getKey()).append("`");
-            object =  entry.getValue().formatToDbData(instance);
-            if(object == null){
-                values.append("null");
-            }else{
-                values.append("'").append(object).append("'");
-            }
-            i++;
-        }
-        names.append("  ) ");
-        values.append("  ) ");
-        sql.append(names).append("  values ").append(values);
-        return sql.toString();
-    }
-
-    private String updateSql(Object instance,DBTable table) {
-        StringBuilder sql = new StringBuilder();
-        sql.append("update ").append(table.getName());
-        sql.append("  set ");
-        int i = 0;
-        Object object;
-        for(Map.Entry<String,FieldGetProxy.FieldGet> entry:table.getColumGetMap().entrySet()){
-            if(entry.getKey() == table.getIdColumName()){
-                continue;
-            }
-            if(i > 0){
-                sql.append(" , ");
-            }
-            object =  entry.getValue().formatToDbData(instance);
-            sql.append(entry.getKey()).append("=");
-            if(object == null){
-                sql.append("null");
-            }else{
-                sql.append("'").append(object).append("'");
-            }
-            i++;
-        }
-        sql.append("  where id = ").append(table.getColumGetMap().get(table.getIdColumName()).formatToDbData(instance));
-        return sql.toString();
     }
 
     /**
@@ -594,10 +516,6 @@ public class LQDataSource implements SqlDataSource,LQConntion {
         ps = null;
         cn = null;
         rs = null;
-    }
-
-    public int getDefaultLimitCount() {
-        return 5000;
     }
 
 }
