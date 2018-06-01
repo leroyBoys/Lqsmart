@@ -15,6 +15,14 @@ public class LQPage {
     private int pageCount;
     private String[] orderByNames;
 
+    public LQPage() {
+    }
+
+    public LQPage(int pageCurrent, int pageSize) {
+        this.setPageCount(pageCurrent);
+        this.setPageSize(pageSize);
+    }
+
     public String[] getOrderByNames() {
         return orderByNames;
     }
