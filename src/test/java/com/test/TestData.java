@@ -14,7 +14,7 @@ import java.util.List;
  * 2018/5/2.
  */
 @RedisCache
-@LQDBTable(name="test_data")
+@LQDBTable(name="test_data1")
 public class TestData {
     @LQField(name = "id",isPrimaryKey = true)
     private int id;

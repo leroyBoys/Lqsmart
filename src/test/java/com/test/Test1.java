@@ -9,7 +9,7 @@ import com.lqsmart.mysql.entity.LQField;
  * 2018/5/4.
  */
 @LQDBTable(name = "test1")
-public class Test1 {
+public class Test1 implements Runnable{
     @LQField
     private int id;
     private int TestData;
@@ -30,5 +30,10 @@ public class Test1 {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    @Override
+    public void run() {
+
     }
 }

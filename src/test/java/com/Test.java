@@ -1,8 +1,10 @@
 package com;
+import com.lgame.util.json.FastJsonTool;
 import com.lqsmart.core.LQStart;
 import com.lqsmart.mysql.impl.LQDataSource;
 import com.lqsmart.redis.impl.RedisConnectionManager;
 import com.lqsmart.util.LqUtil;
+import com.test.DataEntity;
 import com.test.TestData;
 
 import java.util.List;
@@ -13,7 +15,7 @@ import java.util.Random;
  * 2018/5/16.
  */
 public class Test {
-
+    @org.junit.Test
     public void test() throws Exception {
         LQStart.scan("com");
 
@@ -23,11 +25,11 @@ public class Test {
         LQDataSource jdbcPool = LQStart.getJdbcManager().getMaster();
         String sql = "SELECT test_data.* ,test1.`id` AS tid,test1.`name` AS tname FROM `test_data` RIGHT JOIN test1 ON test_data.`id` = test1.`id`";
 
-        List<TestData> testDataList = jdbcPool.ExecuteQueryList(TestData.class,sql);
+        List<DataEntity> testDataList = jdbcPool.ExecuteQueryList(DataEntity.class,sql);
 
-        System.out.println(testDataList.size());
+        System.out.println(FastJsonTool.getJsonFromBean(testDataList));
 
-        TestData testData = testDataList.get(1);
+        DataEntity testData = testDataList.get(1);
         testData.setName("tomess");
         jdbcPool.ExecuteEntity(testData);
 
@@ -41,7 +43,7 @@ public class Test {
         System.out.println(testData.getName()+"   "+testData.getId());
     }
 
-    //@org.junit.Test
+    //
     public void test2() throws Exception {
         LQStart.scan("com");
         String sql = "SELECT test_data.* ,test1.`id` AS tid,test1.`name` AS tname FROM `test_data` RIGHT JOIN test1 ON test_data.`id` = test1.`id`\n";

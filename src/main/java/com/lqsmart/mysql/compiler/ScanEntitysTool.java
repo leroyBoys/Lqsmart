@@ -122,6 +122,19 @@ public class ScanEntitysTool {
         return sqlTypeToJava;
     }
 
+    private List<Field> getOwnAndParentFieldsForLQTable(Class cls){
+        List<Field> list = new LinkedList();
+        Collections.addAll(list,cls.getDeclaredFields());
+
+        if(cls.getSuperclass() != Object.class ){
+            cls = cls.getSuperclass();
+            if(cls.getAnnotation(LQDBTable.class) != null){
+                list.addAll(getOwnAndParentFieldsForLQTable(cls));
+            }
+        }
+        return list;
+    }
+
     private void checkMyDbConfig(Map<Class,ClassCache> classSetMap, Set<Class<?>> classs, List<JavaFile> javaFiles){
         for(Class cls:classs){
             if(columInitMap.containsKey(cls)){
@@ -133,8 +146,8 @@ public class ScanEntitysTool {
                 continue;
             }
 
-            Field[] fields = cls.getDeclaredFields();
-            ClassCache classCache = new ClassCache(fields.length);
+            List<Field> fields = getOwnAndParentFieldsForLQTable(cls);
+            ClassCache classCache = new ClassCache(fields.size());
             classCache.setLqdbTable(lqdbTable);
             classSetMap.put(cls,classCache);
 
@@ -172,10 +185,10 @@ public class ScanEntitysTool {
             ClassCache classCache = classSetMap.get(cls);
             final boolean isNewInit = classCache == null;
             boolean isContainRedisKeyMethod = false;
-            Field[] fields = null;
+            List<Field>  fields = null;
             if(classCache == null){
-                fields = cls.getDeclaredFields();
-                classCache = new ClassCache(fields.length);
+                fields = getOwnAndParentFieldsForLQTable(cls);
+                classCache = new ClassCache(fields.size());
                 classCache.setRedisCache(redisCache);
                 classSetMap.put(cls,classCache);
             }else {
