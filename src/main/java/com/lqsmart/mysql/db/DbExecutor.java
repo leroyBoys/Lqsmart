@@ -30,17 +30,15 @@ public interface DbExecutor {
 
     /**
      * 将普通的查询sql转换page有关的sql
-     * @param sourceSql
      * @param lqPage
      * @return
      */
-    String getQuerySqlForPage(String sourceSql, LQPage lqPage);
+    String getQuerySqlForPage(LQPage lqPage);
 
     /**
      * 将普通的查询sql转换查询总数量的sql
-     * @param sourceSql
      * @param lqPage
      * @return
      */
-    String getResultCountForQuerySql(String sourceSql, LQPage lqPage);
+    String getResultCountForQuerySql(LQPage lqPage);
 }

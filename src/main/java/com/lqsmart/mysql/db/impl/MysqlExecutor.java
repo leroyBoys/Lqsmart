@@ -4,6 +4,7 @@ import com.lqsmart.mysql.compiler.FieldGetProxy;
 import com.lqsmart.mysql.db.DbExecutor;
 import com.lqsmart.mysql.entity.DBTable;
 import com.lqsmart.mysql.entity.LQPage;
+import com.lqsmart.mysql.entity.LQPageOneTable;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -132,15 +133,28 @@ public class MysqlExecutor implements DbExecutor{
     }
 
     @Override
-    public String getQuerySqlForPage(String sourceSql, LQPage lqPage) {
-        StringBuilder sb = new StringBuilder(sourceSql);
-        sb.append(" limit ").append(lqPage.getStart()).append(',').append(lqPage.getEnd());
+    public String getQuerySqlForPage(LQPage lqPage) {
+      /*  if(lqPage instanceof LQPageOneTable){
+            LQPageOneTable lqPageOneTable = (LQPageOneTable) lqPage;
+            if(lqPageOneTable.getUniqueKeyColum() == null){
+                return lqPageOneTable.getSelectSql()+" "+lqPageOneTable.getFromSql()+" limit "+lqPage.getStart()+","+lqPage.getEnd();
+            }
 
-        return null;
+            return  lqPageOneTable.getSelectSql()+" from "+lqPageOneTable.getTableName()+" a JOIN (select "+lqPageOneTable.getUniqueKeyColum()
+                    +" "+lqPageOneTable.getFromSql()+" limit "+lqPage.getStart()+","+lqPage.getEnd()
+                    +") b on a."+lqPageOneTable.getUniqueKeyColum()+" = b."+lqPageOneTable.getUniqueKeyColum();
+        }*/
+
+        return lqPage.getSql()+" limit "+lqPage.getStart()+","+lqPage.getEnd();
     }
 
     @Override
-    public String getResultCountForQuerySql(String sourceSql, LQPage lqPage) {
-        return null;
+    public String getResultCountForQuerySql(LQPage lqPage) {
+       /* if(lqPage instanceof LQPageOneTable){
+            LQPageOneTable lqPageOneTable = (LQPageOneTable) lqPage;
+            return  "SELECT COUNT(1) " +lqPageOneTable.getFromSql();
+        }*/
+
+        return  "SELECT COUNT(1) " +lqPage.getFromSql();
     }
 }

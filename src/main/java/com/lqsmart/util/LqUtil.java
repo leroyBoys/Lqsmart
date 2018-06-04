@@ -192,4 +192,52 @@ public class LqUtil {
         }
         return properties;
     }
+
+    /**
+     * 替换 ? 占位符
+     * @param sourceStr abc?sdfsd?sdfsd
+     * @param values
+     * @return
+     */
+    public static String format(String sourceStr,String... values){
+        if(values == null || values.length==0){
+            return sourceStr;
+        }
+
+        int valueLength = 0;
+        for(String str:values){
+            valueLength+=str.length()-1;
+        }
+        valueLength = sourceStr.length()+ valueLength;
+
+        char[] newChars = new char[valueLength];
+        int offset = -1;
+        int num = -1;
+        char c;
+        int i = 0;
+        String tmp;
+        final int oldStrLength = sourceStr.length()-1;
+        final int valueArrayLength = values.length-1;
+        while (i<valueLength){
+            offset++;
+            if(offset>oldStrLength){
+                break;
+            }
+            c = sourceStr.charAt(offset);
+            if(c!='?'){
+                newChars[i++] = c;
+                continue;
+            }
+            num++;
+            if(num>valueArrayLength){
+                newChars[i++] = c;
+                continue;
+            }
+            tmp = values[num];
+            for(int j=0,count=tmp.length();j<count;j++){
+                newChars[i++] = tmp.charAt(j);
+            }
+        }
+        return new String(newChars);
+    }
 }

@@ -6,9 +6,10 @@ import com.lqsmart.entity.StartInitCache;
 import com.lqsmart.mysql.DbCallBack;
 import com.lqsmart.mysql.SqlDataSource;
 import com.lqsmart.mysql.compiler.ColumInit;
-import com.lqsmart.mysql.compiler.FieldGetProxy;
+import com.lqsmart.mysql.db.DbExecutor;
 import com.lqsmart.mysql.entity.*;
 import com.lqsmart.util.LqLogUtil;
+import com.lqsmart.util.SqlLock;
 
 import javax.sql.DataSource;
 import java.lang.reflect.Method;
@@ -22,6 +23,7 @@ import java.util.*;
 public class LQDataSource implements SqlDataSource,LQConntion {
     private String url;
     private final static Map<String,JdbcColumsArray> cmd_jdbcColumsArrayCache = new HashMap<>();
+    private final static Map<String,String[]> cmd_jdbcColumsArraysCache = new HashMap<>();
     private DataSource dds;
     private LQDbType lqDbType;
     private boolean isConnectioned;
@@ -196,6 +198,93 @@ public class LQDataSource implements SqlDataSource,LQConntion {
         return ExecuteUpdates(lqDbType.getDbExecutor().insertBatchSql(tableName,datas,columNames,commitLimitCount));
     }
 
+    public LinkedList<Map<String, Object>> ExecuteQuerysReturnMap(String cmd, Object... p) {
+        Connection cn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            cn = getConnection();
+
+            ps = cn.prepareStatement(cmd);
+            SetParameter(ps, p);
+
+            rs =  ps.executeQuery();
+            ResultSetMetaData rsMeta = rs.getMetaData();
+
+            String[] columsArray = null;
+            LinkedList<Map<String, Object>> rows = new LinkedList<>();
+            while (rs.next()){
+
+                if(columsArray == null){
+                    columsArray  = initColumsArray(cmd,rsMeta);
+                }
+                HashMap<String, Object> row = new HashMap<>(columsArray.length);
+                for (int i = 0, size = columsArray.length; i < size; ++i) {
+                    Object value = rs.getObject(i + 1);
+                    row.put(columsArray[i], value);
+                }
+
+                rows.add(row);
+            }
+            return rows;
+        } catch (Exception e) {
+            LqLogUtil.error(this.getClass(),e);
+        } finally {
+            this.close(ps, cn, rs);
+        }
+        return null;
+    }
+
+    private String cmdKey(String cmd){
+        char c=0;
+        int i = 0;
+        final int length = cmd.length();
+        while (i<length){
+            c = cmd.charAt(i++);
+            if(c != ' '){
+                break;
+            }
+        }
+
+        if(c == 's' ||  c == 'S'){//sql
+            int idex = cmd.indexOf(" where ");
+            if(idex < 0){
+                cmd = cmd.toLowerCase();
+                idex = cmd.indexOf(" where ");
+            }
+            if(idex<0){
+                return cmd;
+            }
+
+            return  cmd.substring(0,idex);
+        }
+
+        return cmd.substring(0,cmd.indexOf('('));//存储过程
+    }
+
+
+    private String[] initColumsArray(String cmd,ResultSetMetaData rsMeta) throws SQLException {
+        cmd = cmdKey(cmd);
+        String[] array = cmd_jdbcColumsArraysCache.get(cmd);
+        if(array != null){
+            return array;
+        }
+
+        synchronized (SqlLock.lock(cmd)){
+            array = cmd_jdbcColumsArraysCache.get(cmd);
+            if(array != null){
+                return array;
+            }
+
+            array = new String[rsMeta.getColumnCount()];
+            cmd_jdbcColumsArraysCache.put(cmd,array);
+            for (int i = 0, size = array.length; i < size; ++i) {
+                array[i] = rsMeta.getColumnLabel(i + 1);
+            }
+            return array;
+        }
+    }
+
     public boolean ExecuteUpdates(List<String> cmds) {
         Connection cn = null;
         Statement ps = null;
@@ -307,6 +396,29 @@ public class LQDataSource implements SqlDataSource,LQConntion {
         return null;
     }
 
+    public Long ExecuteQueryOnlyOneLongValue(String cmd, Object... p) {
+        Connection cn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            cn = getConnection();
+
+            ps = cn.prepareStatement(cmd);
+            SetParameter(ps, p);
+
+            rs =  ps.executeQuery();
+            while (rs.next()){
+                return rs.getLong(1);
+            }
+            return null;
+        } catch (Exception e) {
+            LqLogUtil.error(this.getClass(),e);
+        } finally {
+            this.close(ps, cn, rs);
+        }
+        return null;
+    }
+
     private <T> JdbcColumsArray initColumsArray(ResultSetMetaData rsMeta, DBTable dbTable) throws SQLException {
         String[] array = new String[rsMeta.getColumnCount()];
 
@@ -352,12 +464,13 @@ public class LQDataSource implements SqlDataSource,LQConntion {
     }
 
     private <T> JdbcColumsArray getJdbcColumsArray(ResultSet rs, Class<T> cls, String cmd, DBTable dbTable) throws SQLException {
+        cmd = cmdKey(cmd);
         JdbcColumsArray jdbcColumsArray = cmd_jdbcColumsArrayCache.get(cmd);
         if(jdbcColumsArray != null){
             return jdbcColumsArray;
         }
 
-        synchronized (cls) {
+        synchronized (SqlLock.lock(cmd)) {
             jdbcColumsArray = cmd_jdbcColumsArrayCache.get(cmd);
             if (jdbcColumsArray != null) {
                 return jdbcColumsArray;
@@ -401,6 +514,25 @@ public class LQDataSource implements SqlDataSource,LQConntion {
         return null;
     }
 
+    /**
+     * 分页需要做缓存，对已查询过总数量不需要每次都查询
+     * @param cls
+     * @param page
+     * @param <T>
+     * @return
+     */
+    public <T> LQPage ExecuteQueryForPage(Class<T> cls,LQPage page){
+        DbExecutor dbExecutor = lqDbType.getDbExecutor();
+        Long resultCount = ExecuteQueryOnlyOneLongValue(dbExecutor.getResultCountForQuerySql(page));
+        if(resultCount == null){
+            return page;
+        }
+
+        List<T> result =  ExecuteQueryList(cls,dbExecutor.getQuerySqlForPage(page));
+        page.setResults(result);
+        page.setCount(resultCount.intValue());
+        return page;
+    }
     /**
      * 只返回一个对象
      * @param cls

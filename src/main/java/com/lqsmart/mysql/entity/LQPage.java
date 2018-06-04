@@ -7,44 +7,29 @@ import java.util.List;
  * Created by leroy:656515489@qq.com
  * 2018/6/1.
  */
-public class LQPage {
+public class LQPage<T> {
     private int start;
     private int end;
     private int pageCurrent = 1;
     private int pageSize;
-    private int pageCount;
-    private String[] orderByNames;
+    private int count;//总数量
+    private String sql;
+    /** select 语句*/
+    private String selectSql;
+    /**  from语句（除select 语句外的部分） */
+    private String fromSql;
+    private List<T> results = new LinkedList<>();
 
     public LQPage() {
     }
 
     public LQPage(int pageCurrent, int pageSize) {
-        this.setPageCount(pageCurrent);
+        this.setPageCurrent(pageCurrent);
         this.setPageSize(pageSize);
     }
 
-    public String[] getOrderByNames() {
-        return orderByNames;
-    }
-
-    public void setOrderByNames(String... orderByNames) {
-        this.orderByNames = orderByNames;
-    }
-
-    /**
-     * 多个字段用,分割
-     */
-    public void setOrderBy(String orderBy) {
-        String[] arry = orderBy.split(",");
-        List<String> list = new LinkedList<>();
-        for(String str:arry){
-            if(!str.trim().isEmpty()){
-                list.add(str);
-            }
-        }
-
-        this.orderByNames = new String[list.size()];
-        list.toArray(this.orderByNames);
+    public List<T> getResults() {
+        return results;
     }
 
     public int getPageCurrent() {
@@ -64,8 +49,49 @@ public class LQPage {
         }
     }
 
+    /**
+     *
+     * @param sql
+     * @param uniqueKeyColum 唯一索引 的columName（最好使用id） 如果不设置则不做优化
+     */
+    public void setSql(String sql, String uniqueKeyColum){
+        this.parsetSql(sql,uniqueKeyColum);
+    }
+
+    private void parsetSql(String sql,String uniqueKeyColum){
+        if(this.selectSql != null){
+            return;
+        }
+
+        int idex = sql.indexOf("from");
+        if(idex < 0){
+            idex = sql.toLowerCase().indexOf("from");
+        }
+
+        if(idex < 0){
+            throw new RuntimeException(" cant find from from sql:"+sql);
+        }
+        this.selectSql = sql.substring(0,idex);
+        this.fromSql = sql.substring(idex,sql.length());
+        this.sql = sql;
+    }
+
+
     public int getPageSize() {
         return pageSize;
+    }
+
+    public String getSelectSql() {
+        return selectSql;
+    }
+
+    public String getSql() {
+        return sql;
+    }
+
+    public String getFromSql() {
+
+        return fromSql;
     }
 
     public void setPageSize(int pageSize) {
@@ -75,16 +101,20 @@ public class LQPage {
         this.end = pageCurrent*pageSize;
     }
 
-    public int getPageCount() {
-        return pageCount;
+    public int getCount() {
+        return count;
     }
 
-    public void setPageCount(int pageCount) {
-        this.pageCount = pageCount;
+    public void setCount(int count) {
+        this.count = count;
     }
 
     public int getStart() {
         return start;
+    }
+
+    public void setResults(List<T> results) {
+        this.results = results;
     }
 
     public int getEnd() {
