@@ -30,7 +30,18 @@ public class LqUtil {
     }
 
     public static boolean isEmpty(String str) {
-        return str == null || str.trim().isEmpty();
+        return str == null || str.isEmpty() || !containsText(str);
+    }
+
+    private static boolean containsText(String str){
+        int strLen = str.length();
+
+        for(int i = 0; i < strLen; ++i) {
+            if(!Character.isWhitespace(str.charAt(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
