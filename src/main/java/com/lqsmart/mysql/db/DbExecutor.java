@@ -11,11 +11,29 @@ import java.util.Map;
  * 2018/6/1.
  */
 public interface DbExecutor {
+    class SqlData{
+        private String sql;
+        private Object[] paratmers;
+
+        public SqlData(String sql, Object[] paratmers) {
+            this.sql = sql;
+            this.paratmers = paratmers;
+        }
+
+        public String getSql() {
+            return sql;
+        }
+
+        public Object[] getParatmers() {
+            return paratmers;
+        }
+    }
+
     /** 批量插入sql分割界限默认值 **/
     int defaultCommitLimitCount = 5000;
-    String updateSql(Object instance, DBTable table);
+    SqlData updateSql(Object instance, DBTable table);
 
-    String insertSql(Object instance, DBTable table);
+    SqlData insertSql(Object instance, DBTable table);
 
     /**
      *

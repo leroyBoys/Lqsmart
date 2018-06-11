@@ -16,10 +16,12 @@ import java.util.Map;
  */
 public class MysqlExecutor implements DbExecutor{
     @Override
-    public String updateSql(Object instance, DBTable table) {
+    public SqlData updateSql(Object instance, DBTable table) {
         StringBuilder sql = new StringBuilder(50);
         sql.append("update").append(' ').append(table.getName()).append(' ');
         sql.append("set").append(' ');
+
+        Object[] p = new Object[table.getColumGetMap().entrySet().size()-1];
         int i = 0;
         Object object;
         for(Map.Entry<String,FieldGetProxy.FieldGet> entry:table.getColumGetMap().entrySet()){
@@ -30,20 +32,16 @@ public class MysqlExecutor implements DbExecutor{
                 sql.append(' ').append(',').append(' ');
             }
             object =  entry.getValue().formatToDbData(instance);
-            sql.append(entry.getKey()).append('=');
-            if(object == null){
-                sql.append("null");
-            }else{
-                sql.append('\'').append(object).append('\'');
-            }
+            sql.append(entry.getKey()).append('=').append('?');
+            p[i] = object;
             i++;
         }
         sql.append(' ').append("where id = ").append(table.getColumGetMap().get(table.getIdColumName()).formatToDbData(instance));
-        return sql.toString();
+        return new SqlData(sql.toString(),p);
     }
 
     @Override
-    public String insertSql(Object instance, DBTable table) {
+    public SqlData insertSql(Object instance, DBTable table) {
         StringBuilder sql = new StringBuilder(50);
         StringBuilder names = new StringBuilder(20);
         StringBuilder values = new StringBuilder(20);
@@ -52,6 +50,8 @@ public class MysqlExecutor implements DbExecutor{
         values.append(' ').append('(').append(' ');
         int i = 0;
         Object object;
+
+        Object[] p = new Object[table.getColumGetMap().entrySet().size()-1];
         for(Map.Entry<String,FieldGetProxy.FieldGet> entry:table.getColumGetMap().entrySet()){
             if(entry.getKey() == table.getIdColumName()){
                 continue;
@@ -63,17 +63,14 @@ public class MysqlExecutor implements DbExecutor{
             }
             names.append('`').append(entry.getKey()).append('`');
             object =  entry.getValue().formatToDbData(instance);
-            if(object == null){
-                values.append("null");
-            }else{
-                values.append('\'').append(object).append('\'');
-            }
+            values.append('?');
+            p[i] = object;
             i++;
         }
         names.append(' ').append(')').append(' ');
         values.append(' ').append(')').append(' ');
         sql.append(names).append(' ').append("values").append(' ').append(values);
-        return sql.toString();
+        return new SqlData(sql.toString(),p);
     }
 
     @Override

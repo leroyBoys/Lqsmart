@@ -332,7 +332,7 @@ public class LQDataSource implements SqlDataSource,LQConntion {
         PreparedStatement ps = null;
         ResultSet rs = null;
         try {
-            String sql;
+            DbExecutor.SqlData sqlData;
             DBTable table = LQStart.instance.getDBTable(instance.getClass());
             if(table == null){
                 LqLogUtil.error(" class:"+instance.getClass().getName()+" not config db");
@@ -342,15 +342,17 @@ public class LQDataSource implements SqlDataSource,LQConntion {
             Object id = table.getColumGetMap().get(table.getIdColumName()).formatToDbData(instance);
             if(id != null && Long.valueOf(id.toString())>0){
 
-                sql = lqDbType.getDbExecutor().updateSql(instance,table);
+                sqlData = lqDbType.getDbExecutor().updateSql(instance,table);
                 cn = getConnection();
-                ps = cn.prepareStatement(sql);
+                ps = cn.prepareStatement(sqlData.getSql());
+                SetParameter(ps, sqlData.getParatmers());
                 return ps.executeUpdate()>0;
             }else {
-                sql = lqDbType.getDbExecutor().insertSql(instance,table);
+                sqlData = lqDbType.getDbExecutor().insertSql(instance,table);
             }
             cn = getConnection();
-            ps = cn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            ps = cn.prepareStatement(sqlData.getSql(), Statement.RETURN_GENERATED_KEYS);
+            SetParameter(ps, sqlData.getParatmers());
             ps.executeUpdate();
             rs = ps.getGeneratedKeys();
             if (rs.next()) {
