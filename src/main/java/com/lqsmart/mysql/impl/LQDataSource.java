@@ -317,7 +317,7 @@ public class LQDataSource implements SqlDataSource,LQConntion {
             ps.executeUpdate();
             rs = ps.getGeneratedKeys();
             if (rs.next()) {
-                return (Long) rs.getObject(1);
+                return rs.getLong(1);
             }
         } catch (Exception e) {
             LqLogUtil.error(this.getClass(),e);
