@@ -4,6 +4,7 @@ import com.lqsmart.mysql.compiler.util.ClassScanner;
 import com.lqsmart.mysql.compiler.util.JavaFile;
 import com.lqsmart.mysql.compiler.util.JavaStringCompiler;
 import com.lqsmart.mysql.entity.*;
+import com.lqsmart.redis.entity.ByteRedisSerializer;
 import com.lqsmart.redis.entity.MapRedisSerializer;
 import com.lqsmart.redis.entity.RedisCache;
 import com.lqsmart.util.LqLogUtil;
@@ -51,11 +52,15 @@ public class ScanEntitysTool {
     }
 
     private String getMethodContentForSet(Class method_obj,Class method_v,String fieldName){
+        String method_className = method_v.getName();
         if(method_v == Boolean.class || method_v == boolean.class){
             if(fieldName.startsWith("is")){
                 fieldName = fieldName.substring(2);
             }
+        }else if(byte[].class == method_v){
+            method_className = "byte[]";
         }
+
 
         char fistChar = fieldName.charAt(0);
         char toUpperCase = fistChar;
@@ -69,7 +74,7 @@ public class ScanEntitysTool {
         sb.append(method_obj.getName()).append(")obj).");
         sb.append(methodName);
         sb.append("((");
-        sb.append(method_v.getName()).append(")v);");
+        sb.append(method_className).append(")v);");
         return sb.toString();
     }
 
@@ -308,6 +313,7 @@ public class ScanEntitysTool {
 
                 dbTable.setRedisKeyGetInace(fieldGet);
                 if(classCache.getRedisCache().type() == RedisCache.Type.Serialize){
+                    dbTable.setRedisSerializer(new ByteRedisSerializer(cls));
                     continue;
                 }
 

@@ -51,6 +51,7 @@ public class LQStart extends Thread{
             globalConfigMap.put(dbType,new MasterSlaveGlobalConfig(dbType));
         }
         StartInitCache startInitCache = getMethodCache();
+        boolean configIsRight = false;
 
         Map<String,MasterSlaveConfig> node_configMap = new HashMap<>();
         for (Enumeration<?> e = properties.keys(); e.hasMoreElements() ;) {
@@ -78,6 +79,7 @@ public class LQStart extends Thread{
                 continue;
             }
 
+            if(!configIsRight) configIsRight = true;
             if(array.length == 3){
                 globalConfigMap.get(dbType).addMaster(propertiesKey(k),v);
                 globalConfigMap.get(dbType).addSlave(propertiesKey(k),v);
@@ -111,7 +113,7 @@ public class LQStart extends Thread{
             }
         }
 
-        if(node_configMap.isEmpty()){
+        if(!configIsRight){
             System.err.println("error:配置数据源格式错误，为初始化数据源");
             return;
         }
@@ -120,11 +122,15 @@ public class LQStart extends Thread{
         startInitCache.getNode_configMap().putAll(node_configMap);
 
         Set<DBType> dbTypes = new HashSet<>();
-        for(Map.Entry<String,MasterSlaveConfig> entry:node_configMap.entrySet()){
-            MasterSlaveConfig masterSlaveConfig = entry.getValue();
-            MasterSlaveGlobalConfig config = globalConfigMap.get(masterSlaveConfig.getDbType());
-            inintDataSourceManger(masterSlaveConfig.getDbType(),entry.getKey(),masterSlaveConfig.isSlowOpen(),masterSlaveConfig.getListeners(),config.getMaster(masterSlaveConfig.getMaster()),config.getSlave(masterSlaveConfig.getSlaves()));
-            dbTypes.add(masterSlaveConfig.getDbType());
+
+        if(!node_configMap.isEmpty()){
+
+            for(Map.Entry<String,MasterSlaveConfig> entry:node_configMap.entrySet()){
+                MasterSlaveConfig masterSlaveConfig = entry.getValue();
+                MasterSlaveGlobalConfig config = globalConfigMap.get(masterSlaveConfig.getDbType());
+                inintDataSourceManger(masterSlaveConfig.getDbType(),entry.getKey(),masterSlaveConfig.isSlowOpen(),masterSlaveConfig.getListeners(),config.getMaster(masterSlaveConfig.getMaster()),config.getSlave(masterSlaveConfig.getSlaves()));
+                dbTypes.add(masterSlaveConfig.getDbType());
+            }
         }
 
         for(DBType dbType: DBType.values()){
