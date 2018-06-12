@@ -17,6 +17,8 @@ public class SqlTypeToJava {
         sqlTypsMap.put(String.class,new SqlTypeToJava());
         sqlTypsMap.put(int.class,new IntToJava());
         sqlTypsMap.put(Integer.class,new IntToJava());
+        sqlTypsMap.put(short.class,new ShortToJava());
+        sqlTypsMap.put(Short.class,new ShortToJava());
         sqlTypsMap.put(float.class,new FloatToJava());
         sqlTypsMap.put(Float.class,new FloatToJava());
         sqlTypsMap.put(double.class,new DoubleToJava());
@@ -125,6 +127,20 @@ public class SqlTypeToJava {
         }
     }
 
+    public static class ShortToJava extends SqlTypeToJava {
+        @Override
+        public Object get(ResultSet rs, String colum) throws SQLException {
+            return rs.getShort(colum);
+        }
+
+        public Object get(ResultSet rs,int index) throws SQLException {
+            return rs.getShort(index);
+        }
+
+        protected Object formtDataTypeFromDb(String value) throws SQLException {
+            return Short.valueOf(value);
+        }
+    }
 
     public static class IntToJava extends SqlTypeToJava {
         @Override
