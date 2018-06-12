@@ -17,6 +17,8 @@ public class RelationData {
     private Class fieldClass;
     private FieldGetProxy fieldGetProxy;
     private ColumInit columInit;
+    private SqlTypeToJava sqlTypeToJava;//如果是基本数据类型则直接使用转换器
+    private String columName;
     private NewInstance newInstance;
     private DBRelations reltaion;
     private int count;
@@ -51,6 +53,22 @@ public class RelationData {
 
     public DBRelations getReltaion() {
         return reltaion;
+    }
+
+    public SqlTypeToJava getSqlTypeToJava() {
+        return sqlTypeToJava;
+    }
+
+    public String getColumName() {
+        return columName;
+    }
+
+    public void setColumName(String columName) {
+        this.columName = columName;
+    }
+
+    public void setSqlTypeToJava(SqlTypeToJava sqlTypeToJava) {
+        this.sqlTypeToJava = sqlTypeToJava;
     }
 
     public boolean isOneToMany(){

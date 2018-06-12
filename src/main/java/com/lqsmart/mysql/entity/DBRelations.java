@@ -17,6 +17,6 @@ public @interface DBRelations {
     Reltaion relation() default OneToOne;
     DBRelation[] map();
     public enum Reltaion{
-        OneToOne,OneToMany,ManyToOne
+        OneToOne,OneToMany
     }
 }

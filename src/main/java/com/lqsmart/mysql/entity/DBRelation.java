@@ -14,5 +14,5 @@ import static java.lang.annotation.ElementType.FIELD;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface DBRelation {
     String colum();
-    String targetColum();
+    String targetColum() default "";
 }

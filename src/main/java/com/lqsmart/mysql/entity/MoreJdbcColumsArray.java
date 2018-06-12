@@ -35,6 +35,7 @@ public class MoreJdbcColumsArray extends JdbcColumsArray {
 
         Object obj;
         String columName;
+        Object columValue;
         RelationData relationData;
         Object reationObj;
 
@@ -62,19 +63,35 @@ public class MoreJdbcColumsArray extends JdbcColumsArray {
                     LqLogUtil.error(dbTable.getName()+":columName:"+columName+" not find from config relationData");
                 }
                 continue;
-            }else if(objMap.contains(relationData.getFieldName())){
+            }else {
+                columValue = rs.getObject(columName);
+                if(columValue == null){
+                    continue;
+                }
+            }
+
+            if(objMap.contains(relationData.getFieldName())){
                 continue;
             }
 
             objMap.add(relationData.getFieldName());
             //可以对一对多的对象也做缓存，这里暂时不做了，以后再扩展
-            reationObj = relationData.getFieldClass().newInstance();
 
             tmpMap = relationFieldNameMap.get(relationData.getFieldName());
-            if(tmpMap == null){
+            if(tmpMap == null || tmpMap.isEmpty()){
+                if(relationData.isOneToMany()){
+                    obj = relationData.getFieldGetProxy().get(t);
+                    if(obj == null){
+                        obj = relationData.getNewInstance().create();
+                        relationData.getColumInit().set(t,obj);
+                    }
+
+                    relationData.getNewInstance().add(obj,relationData.getSqlTypeToJava().get(rs,relationData.getColumName()));
+                }
                 continue;
             }
 
+            reationObj = relationData.getFieldClass().newInstance();
             for(Map.Entry<String,ColumInit> entry:tmpMap.entrySet()){
                 entry.getValue().set(reationObj,rs,entry.getKey());
             }

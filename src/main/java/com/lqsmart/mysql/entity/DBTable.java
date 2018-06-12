@@ -85,6 +85,10 @@ public class DBTable {
         this.redisKeyGetInace = redisKeyGetInace;
     }
 
+    public Map<String, ColumInit> getColumInitMap() {
+        return columInitMap;
+    }
+
     public void putColumRelationMap(String columName, RelationData relationData) {
         if(!columRelationMap.containsKey(columName)){
             columRelationMap.put(columName,relationData);

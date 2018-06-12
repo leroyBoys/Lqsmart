@@ -105,22 +105,31 @@ public class ScanEntitysTool {
     }
 
     private SqlTypeToJava getSqlTypeToJava(Field field, Class curClass){
-        SqlTypeToJava sqlTypeToJava = SqlTypeToJava.get(field.getType());
+        final Class fieldClass = field.getType();
+        return getSqlTypeToJava(fieldClass,curClass.getName(),field.getName());
+    }
+
+    private SqlTypeToJava getSqlTypeToJava(Class fieldClass, String curClassName){
+        return getSqlTypeToJava(fieldClass,curClassName,fieldClass.getName());
+    }
+
+    private SqlTypeToJava getSqlTypeToJava(Class fieldClass, String curClassName,String fieldName){
+        SqlTypeToJava sqlTypeToJava = SqlTypeToJava.get(fieldClass);
         if(sqlTypeToJava == null){
-            if(field.getType().isEnum()){
-                if(LqUtil.isInterFace(field.getType(),LQDBEnum.class)){
-                    Class cc = (Class) (((ParameterizedType) field.getType().getGenericInterfaces()[0]).getActualTypeArguments())[0];
+            if(fieldClass.isEnum()){
+                if(LqUtil.isInterFace(fieldClass,LQDBEnum.class)){
+                    Class cc = (Class) (((ParameterizedType) fieldClass.getGenericInterfaces()[0]).getActualTypeArguments())[0];
                     if(cc == String.class){
-                        sqlTypeToJava = new SqlTypeToJava.EnumStringJava(field.getType());
+                        sqlTypeToJava = new SqlTypeToJava.EnumStringJava(fieldClass);
                     }else {
-                        sqlTypeToJava = new SqlTypeToJava.EnumIntJava(field.getType());
+                        sqlTypeToJava = new SqlTypeToJava.EnumIntJava(fieldClass);
                     }
-                    initEnumCache(field.getType());
+                    initEnumCache(fieldClass);
                 }else {
-                    sqlTypeToJava = new SqlTypeToJava.EnumDefaultJava(field.getType());
+                    sqlTypeToJava = new SqlTypeToJava.EnumDefaultJava(fieldClass);
                 }
             }else {
-                LqLogUtil.info("warn:"+curClass.getName()+"  field:"+field.getName()+"("+field.getType().getName()+") not find match sqlTypeToJava default SqlTypeToJava default set SqlTypeToJava");
+                LqLogUtil.info("warn:"+curClassName+"  field:"+fieldName+"("+fieldClass.getName()+") not find match sqlTypeToJava default SqlTypeToJava default set SqlTypeToJava");
                 sqlTypeToJava = new SqlTypeToJava();
             }
         }
@@ -351,10 +360,29 @@ public class ScanEntitysTool {
             for(RelationData relationDa:entry.getValue()){
                 dbRelationArray = relationDa.getReltaion().map();
                 dbTable = columInitMap.get(relationDa.getFieldClass());
-                for(int i = 0,size = dbRelationArray.length;i<size;i++){
-                    relationDa.put(dbRelationArray[i].colum(),dbTable.getColumInit(dbRelationArray[i].targetColum()));
-                    entry.getKey().putColumRelationMap(dbRelationArray[i].colum(),relationDa);
+                if(dbTable == null){
+                    relationDa.setSqlTypeToJava(getSqlTypeToJava(relationDa.getFieldClass(),entry.getKey().getName()));
+                    for(int i = 0,size = dbRelationArray.length;i<size;i++){
+                        entry.getKey().putColumRelationMap(dbRelationArray[i].colum(),relationDa);
+                        relationDa.setColumName(dbRelationArray[i].colum());
+                    }
+                    continue;
                 }
+
+                if(dbRelationArray.length == 0){
+                    for(Map.Entry<String, ColumInit> entry1:dbTable.getColumInitMap().entrySet()){
+                        relationDa.put(entry1.getKey(),entry1.getValue());
+                        entry.getKey().putColumRelationMap(entry1.getKey(),relationDa);
+                    }
+
+                }else {
+                    for(int i = 0,size = dbRelationArray.length;i<size;i++){
+                        String targetColum = dbRelationArray[i].targetColum().isEmpty()?dbRelationArray[i].colum():dbRelationArray[i].targetColum();
+                        relationDa.put(dbRelationArray[i].colum(),dbTable.getColumInit(targetColum));
+                        entry.getKey().putColumRelationMap(dbRelationArray[i].colum(),relationDa);
+                    }
+                }
+
             }
         }
         compiler.close();
