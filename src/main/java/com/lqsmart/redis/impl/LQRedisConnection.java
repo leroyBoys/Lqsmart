@@ -5,8 +5,10 @@ import com.lqsmart.core.LqTimeCacheManager;
 import com.lqsmart.mysql.entity.DBTable;
 import com.lqsmart.redis.RedisConnection;
 import com.lqsmart.redis.entity.RedisKey;
+import com.lqsmart.util.LQSerializerTool;
 import com.lqsmart.util.LqLogUtil;
 import com.lqsmart.util.LqUtil;
+import com.lqsmart.util.RandomUtil;
 
 import java.util.HashMap;
 import java.util.List;
@@ -60,28 +62,47 @@ public class LQRedisConnection extends RedisConnection {
         if(redisKey instanceof RedisKey.RedisExpireKey){
             RedisKey.RedisExpireKey instanceKey = (RedisKey.RedisExpireKey) redisKey;
             if(instanceKey.getExpire() > 0){
-                this.expire(key,instanceKey.getExpire());
+                this.expire(key,instanceKey.getExpire()+ RandomUtil.random(600));
             }
 
-        }else if(redisKey instanceof RedisKey.RedisExpireAtKey){
+        }else{
             RedisKey.RedisExpireAtKey instanceKey = (RedisKey.RedisExpireAtKey) redisKey;
             if(instanceKey.getExpireAt() > 0){
-                this.expireAt(key,instanceKey.getExpireAt());
-            }
-        }else if(redisKey instanceof RedisKey.RedisExpiresKey){
-            RedisKey.RedisExpiresKey redisExpiresKey = (RedisKey.RedisExpiresKey) redisKey;
-            if(redisExpiresKey.getExpire() > 0){
-                if(redisExpiresKey.getExpireAt() > 0){
-                    long endTime = LqTimeCacheManager.getInstance().getCurTime()+redisExpiresKey.getExpire()*1000;
-                    endTime = Math.min(endTime,redisExpiresKey.getExpireAt());
-                    this.expireAt(key,endTime);
-                }else {
-                    this.expire(key,redisExpiresKey.getExpire());
-                }
-            }else if(redisExpiresKey.getExpireAt() > 0){
-                this.expireAt(key,redisExpiresKey.getExpireAt());
+                this.expireAt(key,instanceKey.getExpireAt()+ RandomUtil.random(1800));
             }
         }
+    }
+
+    public String get(RedisKey key,Object... keyParamters) {
+        byte[] redisKey = LqUtil.hex2byte(key.getKey(keyParamters));
+        byte[] data = super.get(redisKey);
+        if(data == null){
+            return null;
+        }
+        return LqUtil.byte2hex(data);
+    }
+
+    public String set(String value,RedisKey key,Object... keyParamters) {
+        byte[] redisKey = LqUtil.hex2byte(key.getKey(keyParamters));
+        super.set(redisKey,LqUtil.hex2byte(value));
+        resetExpire(redisKey,key);
+        return value;
+    }
+
+    public <T> T getObject(Class<T> cls,RedisKey key,Object... keyParamters) {
+        byte[] redisKey = LqUtil.hex2byte(key.getKey(keyParamters));
+        byte[] data = super.get(redisKey);
+        if(data == null){
+            return null;
+        }
+        return LQSerializerTool.mergeFrom(cls,data);
+    }
+
+    public String setObject(Object value,RedisKey key,Object... keyParamters) {
+        byte[] redisKey = LqUtil.hex2byte(key.getKey(keyParamters));
+        super.set(redisKey,LQSerializerTool.serializer(value));
+        resetExpire(redisKey,key);
+        return null;
     }
 
     /**
@@ -93,16 +114,7 @@ public class LQRedisConnection extends RedisConnection {
     public Map<String, String> hgetAll(RedisKey key,Object... keyParamters) {
         String redisKey = key.getKey(keyParamters);
         Map<String, String> map = super.hgetAll(redisKey);
-        if(map == null){
-            if(key.isSynFromDb()){
-                map = (Map<String, String>) key.queryFromDb(keyParamters);
-                if(map == null ||  map.isEmpty()){
-                    return null;
-                }
-                super.hmset(redisKey,map);
-                return map;
-            }
-        }else {
+        if(map != null){
             return map;
         }
         return null;
@@ -112,16 +124,7 @@ public class LQRedisConnection extends RedisConnection {
         byte[] redisKey = LqUtil.hex2byte(key.getKey(keyParamters));
         byte[] fieldByte = LqUtil.hex2byte(field);
         byte[] bytes = super.hget(redisKey,fieldByte );
-        if(bytes == null){
-            if(key.isSynFromDb()){
-                String value = (String) key.queryFromDb(keyParamters);
-                if(value == null){
-                    return null;
-                }
-                hset(redisKey,fieldByte,LqUtil.hex2byte(value));
-                return value;
-            }
-        }else {
+        if(bytes != null){
             return LqUtil.byte2hex(bytes);
         }
         return null;

@@ -484,13 +484,23 @@ public class LQDataSource implements SqlDataSource,LQConntion {
         }
     }
 
-    public <T> List<T> ExecuteQueryList(Class<T> cls,String cmd, Object... p) {
-        //LqLogUtil.log("cm2d:" + cmd);
+    public <T> List<T> ExecuteQueryList(Class<T> cls){
         DBTable dbTable = LQStart.instance.getDBTable(cls);
         if(dbTable == null){
             throw new RuntimeException(cls.getSimpleName()+" not config dbentity");
         }
+        return ExecuteQueryList(dbTable,cls,lqDbType.getDbExecutor().getQuerySqlForAll(dbTable));
+    }
 
+    public <T> List<T> ExecuteQueryList(Class<T> cls,String cmd, Object... p) {
+        DBTable dbTable = LQStart.instance.getDBTable(cls);
+        if(dbTable == null){
+            throw new RuntimeException(cls.getSimpleName()+" not config dbentity");
+        }
+        return ExecuteQueryList(dbTable,cls,cmd,p);
+    }
+
+    private  <T> List<T> ExecuteQueryList(DBTable dbTable,Class<T> cls,String cmd, Object... p) {
         Connection cn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -535,6 +545,15 @@ public class LQDataSource implements SqlDataSource,LQConntion {
         page.setCount(resultCount.intValue());
         return page;
     }
+
+    public <T> T ExecuteQueryOne(Class<T> cls,Object id){
+        DBTable dbTable = LQStart.instance.getDBTable(cls);
+        if(dbTable == null){
+            throw new RuntimeException(cls.getSimpleName()+" not config dbentity");
+        }
+        return ExecuteQueryOne(dbTable,cls,lqDbType.getDbExecutor().getQuerySqlForId(dbTable,id));
+    }
+
     /**
      * 只返回一个对象
      * @param cls
@@ -544,13 +563,15 @@ public class LQDataSource implements SqlDataSource,LQConntion {
      * @return
      */
     public <T> T ExecuteQueryOne(Class<T> cls,String cmd, Object... p) {
-        LqLogUtil.log("ExecuteQueryOne cmd:" + cmd);
-
         DBTable dbTable = LQStart.instance.getDBTable(cls);
         if(dbTable == null){
             throw new RuntimeException(cls.getSimpleName()+" not config dbentity");
         }
 
+        return ExecuteQueryOne(dbTable,cls,cmd,p);
+    }
+
+    private  <T> T ExecuteQueryOne(DBTable dbTable,Class<T> cls,String cmd, Object... p) {
         Connection cn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;

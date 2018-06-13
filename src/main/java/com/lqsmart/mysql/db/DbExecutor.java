@@ -11,6 +11,8 @@ import java.util.Map;
  * 2018/6/1.
  */
 public interface DbExecutor {
+    String getQuerySqlForAll(DBTable dbTable);
+    String getQuerySqlForId(DBTable dbTable,Object id);
     class SqlData{
         private String sql;
         private Object[] paratmers;

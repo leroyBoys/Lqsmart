@@ -16,6 +16,16 @@ import java.util.Map;
  */
 public class MysqlExecutor implements DbExecutor{
     @Override
+    public String getQuerySqlForAll(DBTable dbTable) {
+        return "select * from "+dbTable.getName();
+    }
+
+    @Override
+    public String getQuerySqlForId(DBTable dbTable,Object id) {
+        return "select * from "+dbTable.getName()+" where "+dbTable.getIdColumName()+" = "+id;
+    }
+
+    @Override
     public SqlData updateSql(Object instance, DBTable table) {
         StringBuilder sql = new StringBuilder(50);
         sql.append("update").append(' ').append(table.getName()).append(' ');

@@ -8,6 +8,7 @@ import com.lqsmart.core.LqTimeCacheManager;
 import com.lqsmart.mysql.entity.DBTable;
 import com.lqsmart.redis.impl.LQRedisConnection;
 import com.lqsmart.util.LqUtil;
+import com.lqsmart.util.RandomUtil;
 
 /**
  * Created by leroy:656515489@qq.com
@@ -29,15 +30,15 @@ public class ByteRedisSerializer extends RedisSerializer {
             redisConnection.set(keys,bytes);
 
             if(table.getRedisCache().expire() > 0){
-                if(table.getRedisCache().expireAt() > 0){
+             /*   if(table.getRedisCache().expireAt() > 0){
                     long endTime = LqTimeCacheManager.getInstance().getCurTime()+table.getRedisCache().expire()*1000;
                     endTime = Math.min(endTime,table.getRedisCache().expireAt());
                     redisConnection.expireAt(keys,endTime);
                     return;
-                }
-                redisConnection.expire(keys,table.getRedisCache().expire());
+                }*/
+                redisConnection.expire(keys,table.getRedisCache().expire()+ RandomUtil.random(600));
             }else  if(table.getRedisCache().expireAt() > 0){
-                redisConnection.expireAt(keys,table.getRedisCache().expireAt());
+                redisConnection.expireAt(keys,table.getRedisCache().expireAt()+ RandomUtil.random(1800));
             }
         }catch (Exception e){
             e.printStackTrace();

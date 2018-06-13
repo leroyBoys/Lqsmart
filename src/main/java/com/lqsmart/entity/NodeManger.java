@@ -69,6 +69,14 @@ public abstract class NodeManger<T extends LQConntion> extends Thread{
         return node.getRandomSlave();
     }
 
+    public T getSlowSlave() {
+        return node.getSlowSlave();
+    }
+
+    public Node<T> getNode(){
+        return node;
+    }
+
     public T getRandomSlave(String nodeName) {
         Node<T> nodeData = nodeMap.get(nodeName);
         if(nodeData == null){

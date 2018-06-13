@@ -99,21 +99,6 @@ public class RedisConnection implements LQConntion {
         return masterHost;
     }
 
-    private List<String> sentinelGetMasterAddrByName22(String masterName){
-        Jedis jedis = null;
-        List<String> masterHost = null;
-        try {
-            jedis = jedisPool.getResource();
-            masterHost = jedis.sentinelGetMasterAddrByName(masterName);
-            return masterHost;
-        } catch (Exception e) {
-            logException(e);
-        } finally {
-            returnResource(jedisPool, jedis);
-        }
-        return masterHost;
-    }
-
     /**
      * 设置过期时间
      * @param key
