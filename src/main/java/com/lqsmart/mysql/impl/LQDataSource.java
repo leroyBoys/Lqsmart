@@ -398,29 +398,6 @@ public class LQDataSource implements SqlDataSource,LQConntion {
         return null;
     }
 
-    public Long ExecuteQueryOnlyOneLongValue(String cmd, Object... p) {
-        Connection cn = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        try {
-            cn = getConnection();
-
-            ps = cn.prepareStatement(cmd);
-            SetParameter(ps, p);
-
-            rs =  ps.executeQuery();
-            while (rs.next()){
-                return rs.getLong(1);
-            }
-            return null;
-        } catch (Exception e) {
-            LqLogUtil.error(this.getClass(),e);
-        } finally {
-            this.close(ps, cn, rs);
-        }
-        return null;
-    }
-
     private <T> JdbcColumsArray initColumsArray(ResultSetMetaData rsMeta, DBTable dbTable) throws SQLException {
         String[] array = new String[rsMeta.getColumnCount()];
 
@@ -535,14 +512,14 @@ public class LQDataSource implements SqlDataSource,LQConntion {
      */
     public <T> LQPage ExecuteQueryForPage(Class<T> cls,LQPage page){
         DbExecutor dbExecutor = lqDbType.getDbExecutor();
-        Long resultCount = ExecuteQueryOnlyOneLongValue(dbExecutor.getResultCountForQuerySql(page));
+        Object resultCount = ExecuteQueryOnlyOneValue(dbExecutor.getResultCountForQuerySql(page));
         if(resultCount == null){
             return page;
         }
 
         List<T> result =  ExecuteQueryList(cls,dbExecutor.getQuerySqlForPage(page));
         page.setResults(result);
-        page.setCount(resultCount.intValue());
+        page.setCount((int) resultCount);
         return page;
     }
 
@@ -585,7 +562,17 @@ public class LQDataSource implements SqlDataSource,LQConntion {
             if (!rs.next()){
                 return null;
             }
-            return getJdbcColumsArray(rs,cls,cmd,dbTable).doExuteOnlyOne(dbTable,rs,cls);
+
+            JdbcColumsArray jdbcColumsArray = getJdbcColumsArray(rs,cls,cmd,dbTable);
+            if(jdbcColumsArray instanceof MoreJdbcColumsArray){
+                QueryResultData<T> resultData = new QueryResultData<>();
+                do{
+                    jdbcColumsArray.doExute(dbTable,rs,cls,resultData);
+                }while (rs.next());
+                return resultData.getResult().getFirst();
+            }
+
+            return jdbcColumsArray.doExuteOnlyOne(dbTable,rs,cls);
         } catch (Exception e) {
             LqLogUtil.error(this.getClass(),e);
         } finally {

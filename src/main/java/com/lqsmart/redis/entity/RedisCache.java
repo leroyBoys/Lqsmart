@@ -12,7 +12,7 @@ import static java.lang.annotation.ElementType.TYPE;
  */
 @Target(TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RedisCache {
+public @interface RedisCache{
     /** 作为唯一值的对应值（默认id） */
     String keyMethodName() default "getId";
     Type type() default Type.Map;

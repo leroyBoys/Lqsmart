@@ -1,12 +1,10 @@
 package com.lqsmart.redis.entity;
 
-import com.dyuproject.protostuff.LinkedBuffer;
-import com.dyuproject.protostuff.ProtostuffIOUtil;
 import com.dyuproject.protostuff.Schema;
 import com.dyuproject.protostuff.runtime.RuntimeSchema;
-import com.lqsmart.core.LqTimeCacheManager;
 import com.lqsmart.mysql.entity.DBTable;
 import com.lqsmart.redis.impl.LQRedisConnection;
+import com.lqsmart.util.LQSerializerTool;
 import com.lqsmart.util.LqUtil;
 import com.lqsmart.util.RandomUtil;
 
@@ -22,7 +20,7 @@ public class ByteRedisSerializer extends RedisSerializer {
 
     @Override
     public void serializer(LQRedisConnection redisConnection, DBTable table, Object entity) {
-         byte[] bytes = ProtostuffIOUtil.toByteArray(entity, schema, LinkedBuffer.allocate(LinkedBuffer.DEFAULT_BUFFER_SIZE));
+         byte[] bytes = LQSerializerTool.serializer(entity,schema);
 
         String key = table.redisKey(table.getRedisKeyGetInace().formatToDbData(entity));
         try {
@@ -30,12 +28,6 @@ public class ByteRedisSerializer extends RedisSerializer {
             redisConnection.set(keys,bytes);
 
             if(table.getRedisCache().expire() > 0){
-             /*   if(table.getRedisCache().expireAt() > 0){
-                    long endTime = LqTimeCacheManager.getInstance().getCurTime()+table.getRedisCache().expire()*1000;
-                    endTime = Math.min(endTime,table.getRedisCache().expireAt());
-                    redisConnection.expireAt(keys,endTime);
-                    return;
-                }*/
                 redisConnection.expire(keys,table.getRedisCache().expire()+ RandomUtil.random(600));
             }else  if(table.getRedisCache().expireAt() > 0){
                 redisConnection.expireAt(keys,table.getRedisCache().expireAt()+ RandomUtil.random(1800));
@@ -54,9 +46,7 @@ public class ByteRedisSerializer extends RedisSerializer {
             if(bytes == null){
                 return null;
             }
-            Object t = instance.newInstance();
-            ProtostuffIOUtil.mergeFrom(bytes, t,schema);
-            return t;
+            return LQSerializerTool.mergeFrom(instance,schema,bytes);
         } catch (Exception e) {
             e.printStackTrace();
             return null;

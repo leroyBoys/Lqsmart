@@ -35,7 +35,7 @@ public class QueryResultData<T> {
         return map;
     }
 */
-    public List<T> getResult(){
+    public LinkedList<T> getResult(){
         return dataList;
     }
 

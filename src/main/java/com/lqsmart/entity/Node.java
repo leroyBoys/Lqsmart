@@ -71,6 +71,11 @@ public abstract class Node<T extends LQConntion>{
            configMasterKey = master.getKey();
         }
 
+        if(length == 0){
+            configMasterKey+="_";//如果只有一个则修改master
+            length++;
+        }
+
         slaves = createArray(length);
         int i = 0;
         for(T t:allConnectionMap.values()){

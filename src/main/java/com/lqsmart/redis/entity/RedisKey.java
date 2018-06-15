@@ -5,13 +5,7 @@ package com.lqsmart.redis.entity;
  * 2018/5/15.
  */
 public interface RedisKey {
-    String getKey(Object... paramters);
-
-    interface RedisExpireKey extends RedisKey {
-        int getExpire();
-    }
-
-    interface RedisExpireAtKey extends RedisKey {
-        long getExpireAt();
-    }
+    String getPrexKey();
+    RedisExecuter getSerialzer();
+    int getExpire();
 }

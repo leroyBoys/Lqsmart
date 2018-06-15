@@ -25,14 +25,14 @@ public class RedisConnection implements LQConntion {
      * @param maxTotal
      * @param maxIdel
      */
-    public RedisConnection(String url, int timeout, int maxTotal, int maxIdel,long maxWaitMillis) {
+    protected RedisConnection(String url, int timeout, int maxTotal, int maxIdel,long maxWaitMillis) {
         init(url, timeout, maxTotal, maxIdel,maxWaitMillis);
     }
 
     /**
      * @param url:redis://db@119.254.166.136:6379/pwd
      */
-    public RedisConnection(String url) {
+    protected RedisConnection(String url) {
         init(url, 5000, 3000, 1500,-1l);
     }
 
@@ -85,7 +85,7 @@ public class RedisConnection implements LQConntion {
         return false;
     }
 
-    public List<String> sentinelGetMasterAddrByName(String host,int port,String masterName){
+    protected List<String> sentinelGetMasterAddrByName(String host,int port,String masterName){
         Jedis jedis = new Jedis(host,port);
         List<String> masterHost = null;
         try {
@@ -193,7 +193,7 @@ public class RedisConnection implements LQConntion {
      * @param keys 一个key  也可以使 string 数组
      * @return 返回删除成功的个数
      */
-    public Long del(String... keys) {
+    protected Long del(String... keys) {
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
@@ -213,7 +213,7 @@ public class RedisConnection implements LQConntion {
      * @param str
      * @return 成功返回 添加后value的长度 失败 返回 添加的 value 的长度  异常返回0L
      */
-    public Long append(String key, String str) {
+    protected Long append(String key, String str) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -234,7 +234,7 @@ public class RedisConnection implements LQConntion {
      * @param key
      * @return true OR false
      */
-    public Boolean exists(String key) {
+    protected Boolean exists(String key) {
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
@@ -254,7 +254,7 @@ public class RedisConnection implements LQConntion {
      * @param value
      * @return 成功返回1 如果存在 和 发生异常 返回 0
      */
-    public Long setnx(String key, String value) {
+    protected Long setnx(String key, String value) {
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
@@ -275,7 +275,7 @@ public class RedisConnection implements LQConntion {
      * @param seconds 单位:秒
      * @return 成功返回OK 失败和异常返回null
      */
-    public String setex(String key, String value, int seconds) {
+    protected String setex(String key, String value, int seconds) {
         Jedis jedis = null;
         String res = null;
         try {
@@ -304,7 +304,7 @@ public class RedisConnection implements LQConntion {
      * @param offset 下标位置
      * @return 返回替换后  value 的长度
      */
-    public Long setrange(String key, String str, int offset) {
+    protected Long setrange(String key, String str, int offset) {
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
@@ -323,7 +323,7 @@ public class RedisConnection implements LQConntion {
      * @param keys string数组 也可以是一个key
      * @return 成功返回value的集合, 失败返回null的集合 ,异常返回空
      */
-    public List<String> mget(String... keys) {
+    protected List<String> mget(String... keys) {
         Jedis jedis = null;
         List<String> values = null;
         try {
@@ -345,7 +345,7 @@ public class RedisConnection implements LQConntion {
      * @param keysvalues
      * @return 成功返回OK 失败 异常 返回 null
      */
-    public String mset(String... keysvalues) {
+    protected String mset(String... keysvalues) {
         Jedis jedis = null;
         String res = null;
         try {
@@ -367,7 +367,7 @@ public class RedisConnection implements LQConntion {
      * @param keysvalues
      * @return 成功返回1 失败返回0
      */
-    public Long msetnx(String... keysvalues) {
+    protected Long msetnx(String... keysvalues) {
         Jedis jedis = null;
         Long res = 0L;
         try {
@@ -388,7 +388,7 @@ public class RedisConnection implements LQConntion {
      * @param value
      * @return 旧值 如果key不存在 则返回null
      */
-    public String getset(String key, String value) {
+    protected String getset(String key, String value) {
         Jedis jedis = null;
         String res = null;
         try {
@@ -410,7 +410,7 @@ public class RedisConnection implements LQConntion {
      * @param endOffset
      * @return 如果没有返回null
      */
-    public String getrange(String key, int startOffset, int endOffset) {
+    protected String getrange(String key, int startOffset, int endOffset) {
         Jedis jedis = null;
         String res = null;
         try {
@@ -430,7 +430,7 @@ public class RedisConnection implements LQConntion {
      * @param key
      * @return 加值后的结果
      */
-    public Long incr(String key) {
+    protected Long incr(String key) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -451,7 +451,7 @@ public class RedisConnection implements LQConntion {
      * @param integer
      * @return
      */
-    public Long incrBy(String key, Long integer) {
+    protected Long incrBy(String key, Long integer) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -471,7 +471,7 @@ public class RedisConnection implements LQConntion {
      * @param key
      * @return
      */
-    public Long decr(String key) {
+    protected Long decr(String key) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -492,7 +492,7 @@ public class RedisConnection implements LQConntion {
      * @param integer
      * @return
      */
-    public Long decrBy(String key, Long integer) {
+    protected Long decrBy(String key, Long integer) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -512,7 +512,7 @@ public class RedisConnection implements LQConntion {
      * @param key
      * @return 失败返回null
      */
-    public Long serlen(String key) {
+    protected Long serlen(String key) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -534,7 +534,7 @@ public class RedisConnection implements LQConntion {
      * @param value
      * @return 如果存在返回0 异常返回null
      */
-    public Long hset(String key, String field, String value) {
+    protected Long hset(String key, String field, String value) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -548,7 +548,7 @@ public class RedisConnection implements LQConntion {
         return res;
     }
 
-    public Long hset(byte[] key, byte[] field, byte[] value) {
+    protected Long hset(byte[] key, byte[] field, byte[] value) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -570,7 +570,7 @@ public class RedisConnection implements LQConntion {
      * @param value
      * @return
      */
-    public Long hsetnx(String key, String field, String value) {
+    protected Long hsetnx(String key, String field, String value) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -605,7 +605,7 @@ public class RedisConnection implements LQConntion {
         return res;
     }
 
-    public String info(String section){
+    protected String info(String section){
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
@@ -630,7 +630,7 @@ public class RedisConnection implements LQConntion {
         }
     }
 
-    public void publish(String channel,String msg){
+    protected void publish(String channel,String msg){
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
@@ -681,7 +681,7 @@ public class RedisConnection implements LQConntion {
         return res;
     }
 
-    public byte[] hget(byte[] key, byte[] field) {
+    protected byte[] hget(byte[] key, byte[] field) {
         Jedis jedis = null;
         byte[] res = null;
         try {
@@ -702,7 +702,7 @@ public class RedisConnection implements LQConntion {
      * @param fields 可以使 一个String 也可以是 String数组
      * @return
      */
-    public List<String> hmget(String key, String... fields) {
+    protected List<String> hmget(String key, String... fields) {
         Jedis jedis = null;
         List<String> res = null;
         try {
@@ -724,7 +724,7 @@ public class RedisConnection implements LQConntion {
      * @param value
      * @return
      */
-    public Long hincrby(String key, String field, Long value) {
+    protected Long hincrby(String key, String field, Long value) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -745,7 +745,7 @@ public class RedisConnection implements LQConntion {
      * @param field
      * @return
      */
-    public Boolean hexists(String key, String field) {
+    protected Boolean hexists(String key, String field) {
         Jedis jedis = null;
         Boolean res = false;
         try {
@@ -765,7 +765,7 @@ public class RedisConnection implements LQConntion {
      * @param key
      * @return
      */
-    public Long hlen(String key) {
+    protected Long hlen(String key) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -780,7 +780,7 @@ public class RedisConnection implements LQConntion {
 
     }
 
-    public Long hlen(byte[] key) {
+    protected Long hlen(byte[] key) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -802,7 +802,7 @@ public class RedisConnection implements LQConntion {
      * @param fields 可以是 一个 field 也可以是 一个数组
      * @return
      */
-    public Long hdel(String key, String... fields) {
+    protected Long hdel(String key, String... fields) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -816,7 +816,7 @@ public class RedisConnection implements LQConntion {
         return res;
     }
 
-    public Long hdel(byte[] key, byte[]... fields) {
+    protected Long hdel(byte[] key, byte[]... fields) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -836,7 +836,7 @@ public class RedisConnection implements LQConntion {
      * @param key
      * @return
      */
-    public Set<String> hkeys(String key) {
+    protected Set<String> hkeys(String key) {
         Jedis jedis = null;
         Set<String> res = null;
         try {
@@ -850,7 +850,7 @@ public class RedisConnection implements LQConntion {
         return res;
     }
 
-    public Set<byte[]> hkeys(byte[] key) {
+    protected Set<byte[]> hkeys(byte[] key) {
         Jedis jedis = null;
         Set<byte[]> res = null;
         try {
@@ -870,7 +870,7 @@ public class RedisConnection implements LQConntion {
      * @param key
      * @return
      */
-    public List<String> hvals(String key) {
+    protected List<String> hvals(String key) {
         Jedis jedis = null;
         List<String> res = null;
         try {
@@ -903,7 +903,7 @@ public class RedisConnection implements LQConntion {
      * @param key
      * @return
      */
-    public Map<byte[], byte[]> hgetAll(byte[] key) {
+    protected Map<byte[], byte[]> hgetAll(byte[] key) {
         Jedis jedis = null;
         Map<byte[], byte[]> res = null;
         try {
@@ -924,7 +924,7 @@ public class RedisConnection implements LQConntion {
      * @param strs 可以使一个string 也可以使string数组
      * @return 返回list的value个数
      */
-    public Long lpush(String key, String... strs) {
+    protected Long lpush(String key, String... strs) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -945,7 +945,7 @@ public class RedisConnection implements LQConntion {
      * @param strs 可以使一个string 也可以使string数组
      * @return 返回list的value个数
      */
-    public Long rpush(String key, String... strs) {
+    protected Long rpush(String key, String... strs) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -968,7 +968,7 @@ public class RedisConnection implements LQConntion {
      * @param value 添加的value
      * @return
      */
-    public Long linsert(String key, BinaryClient.LIST_POSITION where, String pivot, String value) {
+    protected Long linsert(String key, BinaryClient.LIST_POSITION where, String pivot, String value) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -991,7 +991,7 @@ public class RedisConnection implements LQConntion {
      * @param value
      * @return 成功返回OK
      */
-    public String lset(String key, Long index, String value) {
+    protected String lset(String key, Long index, String value) {
         Jedis jedis = null;
         String res = null;
         try {
@@ -1013,7 +1013,7 @@ public class RedisConnection implements LQConntion {
      * @param value
      * @return 返回被删除的个数
      */
-    public Long lrem(String key, long count, String value) {
+    protected Long lrem(String key, long count, String value) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -1035,7 +1035,7 @@ public class RedisConnection implements LQConntion {
      * @param end
      * @return 成功返回OK
      */
-    public String ltrim(String key, long start, long end) {
+    protected String ltrim(String key, long start, long end) {
         Jedis jedis = null;
         String res = null;
         try {
@@ -1055,7 +1055,7 @@ public class RedisConnection implements LQConntion {
      * @param key
      * @return
      */
-    public String lpop(String key) {
+    protected String lpop(String key) {
         Jedis jedis = null;
         String res = null;
         try {
@@ -1075,7 +1075,7 @@ public class RedisConnection implements LQConntion {
      * @param key
      * @return
      */
-    public String rpop(String key) {
+    protected String rpop(String key) {
         Jedis jedis = null;
         String res = null;
         try {
@@ -1097,7 +1097,7 @@ public class RedisConnection implements LQConntion {
      * @param dstkey
      * @return
      */
-    public String rpoplpush(String srckey, String dstkey) {
+    protected String rpoplpush(String srckey, String dstkey) {
         Jedis jedis = null;
         String res = null;
         try {
@@ -1118,7 +1118,7 @@ public class RedisConnection implements LQConntion {
      * @param index
      * @return 如果没有返回null
      */
-    public String lindex(String key, long index) {
+    protected String lindex(String key, long index) {
         Jedis jedis = null;
         String res = null;
         try {
@@ -1138,7 +1138,7 @@ public class RedisConnection implements LQConntion {
      * @param key
      * @return
      */
-    public Long llen(String key) {
+    protected Long llen(String key) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -1161,7 +1161,7 @@ public class RedisConnection implements LQConntion {
      * @param end
      * @return
      */
-    public List<String> lrange(String key, long start, long end) {
+    protected List<String> lrange(String key, long start, long end) {
         Jedis jedis = null;
         List<String> res = null;
         try {
@@ -1182,7 +1182,7 @@ public class RedisConnection implements LQConntion {
      * @param members 可以是一个String 也可以是一个String数组
      * @return 添加成功的个数
      */
-    public Long sadd(String key, String... members) {
+    protected Long sadd(String key, String... members) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -1203,7 +1203,7 @@ public class RedisConnection implements LQConntion {
      * @param members 可以是一个String 也可以是一个String数组
      * @return 删除的个数
      */
-    public Long srem(String key, String... members) {
+    protected Long srem(String key, String... members) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -1223,7 +1223,7 @@ public class RedisConnection implements LQConntion {
      * @param key
      * @return
      */
-    public String spop(String key) {
+    protected String spop(String key) {
         Jedis jedis = null;
         String res = null;
         try {
@@ -1244,7 +1244,7 @@ public class RedisConnection implements LQConntion {
      * @param keys 可以使一个string 则返回set中所有的value 也可以是string数组
      * @return
      */
-    public Set<String> sdiff(String... keys) {
+    protected Set<String> sdiff(String... keys) {
         Jedis jedis = null;
         Set<String> res = null;
         try {
@@ -1266,7 +1266,7 @@ public class RedisConnection implements LQConntion {
      * @param keys   可以使一个string 则返回set中所有的value 也可以是string数组
      * @return
      */
-    public Long sdiffstore(String dstkey, String... keys) {
+    protected Long sdiffstore(String dstkey, String... keys) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -1286,7 +1286,7 @@ public class RedisConnection implements LQConntion {
      * @param keys 可以使一个string 也可以是一个string数组
      * @return
      */
-    public Set<String> sinter(String... keys) {
+    protected Set<String> sinter(String... keys) {
         Jedis jedis = null;
         Set<String> res = null;
         try {
@@ -1307,7 +1307,7 @@ public class RedisConnection implements LQConntion {
      * @param keys   可以使一个string 也可以是一个string数组
      * @return
      */
-    public Long sinterstore(String dstkey, String... keys) {
+    protected Long sinterstore(String dstkey, String... keys) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -1327,7 +1327,7 @@ public class RedisConnection implements LQConntion {
      * @param keys 可以使一个string 也可以是一个string数组
      * @return
      */
-    public Set<String> sunion(String... keys) {
+    protected Set<String> sunion(String... keys) {
         Jedis jedis = null;
         Set<String> res = null;
         try {
@@ -1348,7 +1348,7 @@ public class RedisConnection implements LQConntion {
      * @param keys   可以使一个string 也可以是一个string数组
      * @return
      */
-    public Long sunionstore(String dstkey, String... keys) {
+    protected Long sunionstore(String dstkey, String... keys) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -1370,7 +1370,7 @@ public class RedisConnection implements LQConntion {
      * @param member set中的value
      * @return
      */
-    public Long smove(String srckey, String dstkey, String member) {
+    protected Long smove(String srckey, String dstkey, String member) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -1390,7 +1390,7 @@ public class RedisConnection implements LQConntion {
      * @param key
      * @return
      */
-    public Long scard(String key) {
+    protected Long scard(String key) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -1411,7 +1411,7 @@ public class RedisConnection implements LQConntion {
      * @param member
      * @return
      */
-    public Boolean sismember(String key, String member) {
+    protected Boolean sismember(String key, String member) {
         Jedis jedis = null;
         Boolean res = null;
         try {
@@ -1431,7 +1431,7 @@ public class RedisConnection implements LQConntion {
      * @param key
      * @return
      */
-    public String srandmember(String key) {
+    protected String srandmember(String key) {
         Jedis jedis = null;
         String res = null;
         try {
@@ -1451,7 +1451,7 @@ public class RedisConnection implements LQConntion {
      * @param count
      * @return
      */
-    public List<String> srandmember(String key, int count) {
+    protected List<String> srandmember(String key, int count) {
         Jedis jedis = null;
         List<String> res = null;
         try {
@@ -1471,7 +1471,7 @@ public class RedisConnection implements LQConntion {
      * @param key
      * @return
      */
-    public Set<String> smembers(String key) {
+    protected Set<String> smembers(String key) {
         Jedis jedis = null;
         Set<String> res = null;
         try {
@@ -1493,7 +1493,7 @@ public class RedisConnection implements LQConntion {
      * @param scoreMembers
      * @return
      */
-    public Long zadd(String key, Map<String, Double> scoreMembers) {
+    protected Long zadd(String key, Map<String, Double> scoreMembers) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -1516,7 +1516,7 @@ public class RedisConnection implements LQConntion {
      * @param member
      * @return
      */
-    public Long zadd(String key, double score, String member) {
+    protected Long zadd(String key, double score, String member) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -1537,7 +1537,7 @@ public class RedisConnection implements LQConntion {
      * @param members 可以使一个string 也可以是一个string数组
      * @return
      */
-    public Long zrem(String key, String... members) {
+    protected Long zrem(String key, String... members) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -1559,7 +1559,7 @@ public class RedisConnection implements LQConntion {
      * @param member
      * @return
      */
-    public Double zincrby(String key, double score, String member) {
+    protected Double zincrby(String key, double score, String member) {
         Jedis jedis = null;
         Double res = null;
         try {
@@ -1581,7 +1581,7 @@ public class RedisConnection implements LQConntion {
      * @param member
      * @return
      */
-    public Long zrank(String key, String member) {
+    protected Long zrank(String key, String member) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -1603,7 +1603,7 @@ public class RedisConnection implements LQConntion {
      * @param member
      * @return
      */
-    public Long zrevrank(String key, String member) {
+    protected Long zrevrank(String key, String member) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -1627,7 +1627,7 @@ public class RedisConnection implements LQConntion {
      * @param end
      * @return
      */
-    public Set<String> zrevrange(String key, long start, long end) {
+    protected Set<String> zrevrange(String key, long start, long end) {
         Jedis jedis = null;
         Set<String> res = null;
         try {
@@ -1648,7 +1648,7 @@ public class RedisConnection implements LQConntion {
      * @param end
      * @return
      */
-    public Set<String> zrange(String key, int start, int end) {
+    protected Set<String> zrange(String key, int start, int end) {
         Jedis jedis = null;
         Set<String> res = null;
         try {
@@ -1669,7 +1669,7 @@ public class RedisConnection implements LQConntion {
      * @param end
      * @return
      */
-    public Set<byte[]> zrange(byte[] key, int start, int end) {
+    protected Set<byte[]> zrange(byte[] key, int start, int end) {
         Jedis jedis = null;
         Set<byte[]> res = null;
         try {
@@ -1691,7 +1691,7 @@ public class RedisConnection implements LQConntion {
      * @param min
      * @return
      */
-    public Set<String> zrangebyscore(String key, String max, String min) {
+    protected Set<String> zrangebyscore(String key, String max, String min) {
         Jedis jedis = null;
         Set<String> res = null;
         try {
@@ -1713,7 +1713,7 @@ public class RedisConnection implements LQConntion {
      * @param min
      * @return
      */
-    public Set<String> zrangeByScore(String key, double max, double min) {
+    protected Set<String> zrangeByScore(String key, double max, double min) {
         Jedis jedis = null;
         Set<String> res = null;
         try {
@@ -1735,7 +1735,7 @@ public class RedisConnection implements LQConntion {
      * @param max
      * @return
      */
-    public Long zcount(String key, String min, String max) {
+    protected Long zcount(String key, String min, String max) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -1755,7 +1755,7 @@ public class RedisConnection implements LQConntion {
      * @param key
      * @return
      */
-    public Long zcard(String key) {
+    protected Long zcard(String key) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -1776,7 +1776,7 @@ public class RedisConnection implements LQConntion {
      * @param member
      * @return
      */
-    public Double zscore(String key, String member) {
+    protected Double zscore(String key, String member) {
         Jedis jedis = null;
         Double res = null;
         try {
@@ -1798,7 +1798,7 @@ public class RedisConnection implements LQConntion {
      * @param end
      * @return
      */
-    public Long zremrangeByRank(String key, long start, long end) {
+    protected Long zremrangeByRank(String key, long start, long end) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -1820,7 +1820,7 @@ public class RedisConnection implements LQConntion {
      * @param end
      * @return
      */
-    public Long zremrangeByScore(String key, double start, double end) {
+    protected Long zremrangeByScore(String key, double start, double end) {
         Jedis jedis = null;
         Long res = null;
         try {
@@ -1834,7 +1834,7 @@ public class RedisConnection implements LQConntion {
         return res;
     }
 
-    public String get(String key) {
+    protected String get(String key) {
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
@@ -1847,7 +1847,7 @@ public class RedisConnection implements LQConntion {
         return null;
     }
 
-    public String set(String key, String v) {
+    protected String set(String key, String v) {
         Jedis jedis = null;
         try {
             jedis = jedisPool.getResource();
@@ -1894,7 +1894,7 @@ public class RedisConnection implements LQConntion {
      * @param pattern
      * @return
      */
-    public Set<String> keys(String pattern) {
+    protected Set<String> keys(String pattern) {
         Jedis jedis = null;
         Set<String> res = null;
         try {
@@ -1914,7 +1914,7 @@ public class RedisConnection implements LQConntion {
      * @param key
      * @return
      */
-    public String type(String key) {
+    protected String type(String key) {
         Jedis jedis = null;
         String res = null;
         try {
@@ -1933,7 +1933,7 @@ public class RedisConnection implements LQConntion {
      *
      * @param pool
      */
-    public static void returnResource(JedisPool pool, Jedis jedis) {
+    protected static void returnResource(JedisPool pool, Jedis jedis) {
         if (jedis != null) {
             jedis.close();
         }
