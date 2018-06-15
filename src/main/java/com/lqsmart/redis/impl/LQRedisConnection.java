@@ -65,7 +65,7 @@ public class LQRedisConnection extends RedisConnection {
         this.expire(key,redisKey.getExpire()+ RandomUtil.random(600));
     }
 
-    protected String getRedisKey(RedisKey key,Object... keyParamters){
+    protected String getRedisKey(RedisKey key,Object[] keyParamters){
         if(keyParamters == null || keyParamters.length == 0){
             return key.getPrexKey();
         }
@@ -77,7 +77,7 @@ public class LQRedisConnection extends RedisConnection {
         return redisKey;
     }
 
-    public <T> T getObject(RedisKey key,Object... keyParamters) {
+    public <T> T getObject(RedisKey key,Object[] keyParamters) {
         byte[] redisKey = RedisExecuter.serializerForString(getRedisKey(key,keyParamters));
         byte[] data = super.get(redisKey);
         if(data == null){
@@ -112,7 +112,7 @@ public class LQRedisConnection extends RedisConnection {
         return null;
     }
 
-    public String hget(RedisKey key,String field,Object... keyParamters) {
+    public String hget(RedisKey key,String field,Object[] keyParamters) {
         byte[] redisKey = RedisExecuter.serializerForString(getRedisKey(key,keyParamters));
         byte[] fieldByte = RedisExecuter.serializerForString(field);
         byte[] bytes = super.hget(redisKey,fieldByte);
@@ -130,11 +130,11 @@ public class LQRedisConnection extends RedisConnection {
      * @param value
      * @return 状态码 1成功，0失败，fieid已存在将更新，也返回0
      */
-    public Long hset(RedisKey key,String field, String value,Object... keyParamters) {
+    public Long hset(RedisKey key,String field, String value,Object[] keyParamters) {
         return hset(key,field,value,0,keyParamters);
     }
 
-    public Long hset(RedisKey key,String field, String value,long expireAtTime,Object... keyParamters) {
+    public Long hset(RedisKey key,String field, String value,long expireAtTime,Object[] keyParamters) {
         byte[] redisKey = RedisExecuter.serializerForString(getRedisKey(key,keyParamters));
         Long flag = super.hset(redisKey, RedisExecuter.serializerForString(field), RedisExecuter.serializerForString(value));
         resetExpire(redisKey,key,expireAtTime);
@@ -147,11 +147,11 @@ public class LQRedisConnection extends RedisConnection {
      * @param hash
      * @return
      */
-    public String hmset(RedisKey key,Map<String, String> hash,Object... keyParamters) {
+    public String hmset(RedisKey key,Map<String, String> hash,Object[] keyParamters) {
         return hmset(key,hash,0,keyParamters);
     }
 
-    public String hmset(RedisKey key,Map<String, String> hash,long expireAtTime,Object... keyParamters) {
+    public String hmset(RedisKey key,Map<String, String> hash,long expireAtTime,Object[] keyParamters) {
         byte[] redisKey = RedisExecuter.serializerForString(getRedisKey(key,keyParamters));
 
         Map<byte[], byte[]> hashByts = new HashMap<>(hash.size());
@@ -163,67 +163,67 @@ public class LQRedisConnection extends RedisConnection {
         return ret;
     }
 
-    public long del(RedisKey key,Object... keyParamters) {
+    public long del(RedisKey key,Object[] keyParamters) {
         return super.del(getRedisKey(key,keyParamters));
     }
 
-    public long hdel(RedisKey key,String field,Object... keyParamters) {
+    public long hdel(RedisKey key,String field,Object[] keyParamters) {
         return super.hdel(RedisExecuter.serializerForString(getRedisKey(key,keyParamters)), RedisExecuter.serializerForString(field));
     }
 
-    public long hlen(RedisKey key,Object... keyParamters) {
+    public long hlen(RedisKey key,Object[] keyParamters) {
         return super.hlen(RedisExecuter.serializerForString(getRedisKey(key,keyParamters)));
     }
 
-    public Long zadd(RedisKey key,double score, String member,Object... keyParamters) {
+    public Long zadd(RedisKey key,double score, String member,Object[] keyParamters) {
         return super.zadd(getRedisKey(key,keyParamters), score, member);
     }
 
-    public Double zincrby(RedisKey key,double score, String member,Object... keyParamters) {
+    public Double zincrby(RedisKey key,double score, String member,Object[] keyParamters) {
         return super.zincrby(getRedisKey(key,keyParamters), score, member);
     }
 
-    public Long zrem(String member,RedisKey key,Object... keyParamters) {
+    public Long zrem(String member,RedisKey key,Object[] keyParamters) {
         return super.zrem(getRedisKey(key,keyParamters), member);
     }
 
-    public Set<String> zrevrange(int start, int end, RedisKey key, Object... keyParamters) {
+    public Set<String> zrevrange(int start, int end, RedisKey key, Object[] keyParamters) {
         return super.zrevrange(getRedisKey(key,keyParamters), start, end);
     }
 
-    public Set<String> zrange(int start, int end,RedisKey key,Object... keyParamters) {
+    public Set<String> zrange(int start, int end,RedisKey key,Object[] keyParamters) {
         return super.zrange(getRedisKey(key,keyParamters), start, end);
     }
 
-    public Long zrevrank(String member,RedisKey key,Object... keyParamters) {
+    public Long zrevrank(String member,RedisKey key,Object[] keyParamters) {
         return super.zrevrank(getRedisKey(key,keyParamters), member);
     }
 
-    public Long zrank(String member,RedisKey key,Object... keyParamters) {
+    public Long zrank(String member,RedisKey key,Object[] keyParamters) {
         return super.zrank(getRedisKey(key,keyParamters), member);
     }
 
-    public Double zscore(String member,RedisKey key,Object... keyParamters) {
+    public Double zscore(String member,RedisKey key,Object[] keyParamters) {
         return super.zscore(getRedisKey(key,keyParamters), member);
     }
 
-    public long lpush(String member,RedisKey key,Object... keyParamters) {
+    public long lpush(String member,RedisKey key,Object[] keyParamters) {
         return super.lpush(getRedisKey(key,keyParamters), member);
     }
 
-    public long llen(RedisKey key,Object... keyParamters) {
+    public long llen(RedisKey key,Object[] keyParamters) {
         return super.llen(getRedisKey(key,keyParamters));
     }
 
-    public List<String> lrange(long start, long end, RedisKey key, Object... keyParamters) {
+    public List<String> lrange(long start, long end, RedisKey key, Object[] keyParamters) {
         return super.lrange(getRedisKey(key,keyParamters), start, end);
     }
 
-    public Long sadd(String[] member,RedisKey key,Object... keyParamters) {
+    public Long sadd(String[] member,RedisKey key,Object[] keyParamters) {
         return super.sadd(getRedisKey(key,keyParamters), member);
     }
 
-    public Long sadd(String member,RedisKey key,Object... keyParamters) {
+    public Long sadd(String member,RedisKey key,Object[] keyParamters) {
         return super.sadd(getRedisKey(key,keyParamters), member);
     }
 
@@ -233,7 +233,7 @@ public class LQRedisConnection extends RedisConnection {
      * @param keyParamters
      * @return
      */
-    public Set<String> smembers(RedisKey key,Object... keyParamters) {
+    public Set<String> smembers(RedisKey key,Object[] keyParamters) {
         return super.smembers(getRedisKey(key,keyParamters));
     }
 
@@ -244,7 +244,7 @@ public class LQRedisConnection extends RedisConnection {
      * @param keyParamters
      * @return
      */
-    public List<String> srandmember(int count,RedisKey key,Object... keyParamters) {
+    public List<String> srandmember(int count,RedisKey key,Object[] keyParamters) {
         return super.srandmember(getRedisKey(key,keyParamters), count);
     }
 }

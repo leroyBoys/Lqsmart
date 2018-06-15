@@ -169,7 +169,7 @@ public class LQDataSource implements SqlDataSource,LQConntion {
         return false;
     }
 
-    public boolean ExecuteUpdate(String cmd, Object... p) {
+    public boolean ExecuteUpdate(String cmd, Object[] p) {
         Connection cn = null;
         PreparedStatement ps = null;
         try {
@@ -179,6 +179,21 @@ public class LQDataSource implements SqlDataSource,LQConntion {
             return ps.executeUpdate() > 0;
         } catch (Exception e) {
             LqLogUtil.error(cmd+(p==null?"": Arrays.toString(p)),e);
+        } finally {
+            this.close(ps, cn);
+        }
+        return false;
+    }
+
+    public boolean ExecuteUpdate(String cmd) {
+        Connection cn = null;
+        PreparedStatement ps = null;
+        try {
+            cn = getConnection();
+            ps = cn.prepareStatement(cmd);
+            return ps.executeUpdate() > 0;
+        } catch (Exception e) {
+            LqLogUtil.error(cmd,e);
         } finally {
             this.close(ps, cn);
         }
@@ -198,7 +213,11 @@ public class LQDataSource implements SqlDataSource,LQConntion {
         return ExecuteUpdates(lqDbType.getDbExecutor().insertBatchSql(tableName,datas,columNames,commitLimitCount));
     }
 
-    public LinkedList<Map<String, Object>> ExecuteQuerysReturnMap(String cmd, Object... p) {
+    public LinkedList<Map<String, Object>> ExecuteQuerysReturnMap(String cmd){
+        return ExecuteQuerysReturnMap(cmd);
+    }
+
+    public LinkedList<Map<String, Object>> ExecuteQuerysReturnMap(String cmd, Object[] p) {
         Connection cn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -236,13 +255,19 @@ public class LQDataSource implements SqlDataSource,LQConntion {
     }
 
     private String cmdKey(String cmd){
-        char c=0;
-        int i = 0;
-        final int length = cmd.length();
-        while (i<length){
-            c = cmd.charAt(i++);
-            if(c != ' '){
-                break;
+
+        char c=cmd.charAt(0);
+        if(c == ' '){
+            int i = 1;
+            final int length = cmd.length();
+            while (i<length){
+                c = cmd.charAt(i++);
+                if(c != ' '){
+                    break;
+                }
+            }
+            if(c == ' '){
+                throw new RuntimeException("cmd is empty!");
             }
         }
 
@@ -306,7 +331,11 @@ public class LQDataSource implements SqlDataSource,LQConntion {
         return false;
     }
 
-    public long ExecuteInsert(String sql, Object... p) {
+    public long ExecuteInsert(String sql) {
+        return ExecuteInsert(sql,null);
+    }
+
+    public long ExecuteInsert(String sql, Object[] p) {
         Connection cn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -375,7 +404,7 @@ public class LQDataSource implements SqlDataSource,LQConntion {
      * @param p
      * @return
      */
-    public Object ExecuteQueryOnlyOneValue(String cmd, Object... p) {
+    public Object ExecuteQueryOnlyOneValue(String cmd, Object[] p) {
         Connection cn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -396,6 +425,10 @@ public class LQDataSource implements SqlDataSource,LQConntion {
             this.close(ps, cn, rs);
         }
         return null;
+    }
+
+    public Object ExecuteQueryOnlyOneValue(String cmd){
+        return ExecuteQueryOnlyOneValue(cmd,null);
     }
 
     private <T> JdbcColumsArray initColumsArray(ResultSetMetaData rsMeta, DBTable dbTable) throws SQLException {
@@ -466,18 +499,53 @@ public class LQDataSource implements SqlDataSource,LQConntion {
         if(dbTable == null){
             throw new RuntimeException(cls.getSimpleName()+" not config dbentity");
         }
-        return ExecuteQueryList(dbTable,cls,lqDbType.getDbExecutor().getQuerySqlForAll(dbTable));
+        return ExecuteQueryList(dbTable,cls,lqDbType.getDbExecutor().getQuerySqlForAll(dbTable),null);
     }
 
-    public <T> List<T> ExecuteQueryList(Class<T> cls,String cmd, Object... p) {
+    public <T> List<T> ExecuteQueryList(Class<T> cls,String cmd, Object[] p) {
         DBTable dbTable = LQStart.instance.getDBTable(cls);
         if(dbTable == null){
-            throw new RuntimeException(cls.getSimpleName()+" not config dbentity");
+           // throw new RuntimeException(cls.getSimpleName()+" not config dbentity");
+            return ExecuteQueryListForBase(cmd,p);
         }
         return ExecuteQueryList(dbTable,cls,cmd,p);
     }
 
-    private  <T> List<T> ExecuteQueryList(DBTable dbTable,Class<T> cls,String cmd, Object... p) {
+    public <T> List<T> ExecuteQueryList(Class<T> cls,String cmd) {
+        DBTable dbTable = LQStart.instance.getDBTable(cls);
+        if(dbTable == null){
+            // throw new RuntimeException(cls.getSimpleName()+" not config dbentity");
+            return ExecuteQueryListForBase(cmd,null);
+        }
+        return ExecuteQueryList(dbTable,cls,cmd,null);
+    }
+
+    private  <T> List<T> ExecuteQueryListForBase(String cmd, Object[] p){
+        Connection cn = null;
+        PreparedStatement ps = null;
+        ResultSet rs = null;
+        try {
+            cn = getConnection();
+
+            ps = cn.prepareStatement(cmd);
+
+            SetParameter(ps, p);
+            rs =  ps.executeQuery();
+
+            List<T> list = new LinkedList<>();
+            while (rs.next()){
+                list.add((T) rs.getObject(1));
+            }
+            return list;
+        } catch (Exception e) {
+            LqLogUtil.error(this.getClass(),e);
+        } finally {
+            this.close(ps, cn, rs);
+        }
+        return null;
+    }
+
+    private  <T> List<T> ExecuteQueryList(DBTable dbTable,Class<T> cls,String cmd, Object[] p) {
         Connection cn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
@@ -512,23 +580,23 @@ public class LQDataSource implements SqlDataSource,LQConntion {
      */
     public <T> LQPage ExecuteQueryForPage(Class<T> cls,LQPage page){
         DbExecutor dbExecutor = lqDbType.getDbExecutor();
-        Object resultCount = ExecuteQueryOnlyOneValue(dbExecutor.getResultCountForQuerySql(page));
+        Object resultCount = ExecuteQueryOnlyOneValue(dbExecutor.getResultCountForQuerySql(page),null);
         if(resultCount == null){
             return page;
         }
 
-        List<T> result =  ExecuteQueryList(cls,dbExecutor.getQuerySqlForPage(page));
+        List<T> result =  ExecuteQueryList(cls,dbExecutor.getQuerySqlForPage(page),null);
         page.setResults(result);
         page.setCount((int) resultCount);
         return page;
     }
 
-    public <T> T ExecuteQueryOne(Class<T> cls,Object id){
+    public <T> T ExecuteQueryById(Class<T> cls,Object id){
         DBTable dbTable = LQStart.instance.getDBTable(cls);
         if(dbTable == null){
             throw new RuntimeException(cls.getSimpleName()+" not config dbentity");
         }
-        return ExecuteQueryOne(dbTable,cls,lqDbType.getDbExecutor().getQuerySqlForId(dbTable,id));
+        return ExecuteQueryOne(dbTable,cls,lqDbType.getDbExecutor().getQuerySqlForId(dbTable,id),null);
     }
 
     /**
@@ -539,7 +607,7 @@ public class LQDataSource implements SqlDataSource,LQConntion {
      * @param <T>
      * @return
      */
-    public <T> T ExecuteQueryOne(Class<T> cls,String cmd, Object... p) {
+    public <T> T ExecuteQueryOne(Class<T> cls,String cmd, Object[] p) {
         DBTable dbTable = LQStart.instance.getDBTable(cls);
         if(dbTable == null){
             throw new RuntimeException(cls.getSimpleName()+" not config dbentity");
@@ -548,7 +616,11 @@ public class LQDataSource implements SqlDataSource,LQConntion {
         return ExecuteQueryOne(dbTable,cls,cmd,p);
     }
 
-    private  <T> T ExecuteQueryOne(DBTable dbTable,Class<T> cls,String cmd, Object... p) {
+    public <T> T ExecuteQueryOne(Class<T> cls,String cmd){
+        return ExecuteQueryOne(cls,cmd,null);
+    }
+
+    private  <T> T ExecuteQueryOne(DBTable dbTable,Class<T> cls,String cmd, Object[] p) {
         Connection cn = null;
         PreparedStatement ps = null;
         ResultSet rs = null;
