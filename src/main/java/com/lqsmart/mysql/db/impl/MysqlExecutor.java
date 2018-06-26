@@ -26,6 +26,11 @@ public class MysqlExecutor implements DbExecutor{
     }
 
     @Override
+    public String getDelSqlForId(DBTable dbTable, Object id) {
+        return "delete from "+dbTable.getName()+" where "+dbTable.getIdColumName()+" = "+id;
+    }
+
+    @Override
     public SqlData updateSql(Object instance, DBTable table) {
         StringBuilder sql = new StringBuilder(50);
         sql.append("update").append(' ').append(table.getName()).append(' ');

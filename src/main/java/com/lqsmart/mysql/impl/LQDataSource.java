@@ -599,6 +599,15 @@ public class LQDataSource implements SqlDataSource,LQConntion {
         return ExecuteQueryOne(dbTable,cls,lqDbType.getDbExecutor().getQuerySqlForId(dbTable,id),null);
     }
 
+    public <T> void DelEntity(Class<T> cls,Object id){
+        DBTable dbTable = LQStart.instance.getDBTable(cls);
+        if(dbTable == null){
+            throw new RuntimeException(cls.getSimpleName()+" not config dbentity");
+        }
+        ExecuteUpdate(lqDbType.getDbExecutor().getQuerySqlForId(dbTable,id));
+    }
+
+
     /**
      * 只返回一个对象
      * @param cls

@@ -13,6 +13,7 @@ import java.util.Map;
 public interface DbExecutor {
     String getQuerySqlForAll(DBTable dbTable);
     String getQuerySqlForId(DBTable dbTable,Object id);
+    String getDelSqlForId(DBTable dbTable,Object id);
     class SqlData{
         private String sql;
         private Object[] paratmers;
