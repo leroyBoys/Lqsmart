@@ -169,6 +169,22 @@ public class LQDataSource implements SqlDataSource,LQConntion {
         return false;
     }
 
+    public boolean Execute(String cmd, Object[] p) {
+        Connection cn = null;
+        PreparedStatement ps = null;
+        try {
+            cn = getConnection();
+            ps = cn.prepareStatement(cmd);
+            SetParameter(ps, p);
+            return ps.execute();
+        } catch (Exception e) {
+            LqLogUtil.error(cmd+(p==null?"": Arrays.toString(p)),e);
+        } finally {
+            this.close(ps, cn);
+        }
+        return false;
+    }
+
     public boolean ExecuteUpdate(String cmd, Object[] p) {
         Connection cn = null;
         PreparedStatement ps = null;
@@ -604,7 +620,7 @@ public class LQDataSource implements SqlDataSource,LQConntion {
         if(dbTable == null){
             throw new RuntimeException(cls.getSimpleName()+" not config dbentity");
         }
-        ExecuteUpdate(lqDbType.getDbExecutor().getQuerySqlForId(dbTable,id));
+        Execute(lqDbType.getDbExecutor().getDelSqlForId(dbTable,id),null);
     }
 
 
