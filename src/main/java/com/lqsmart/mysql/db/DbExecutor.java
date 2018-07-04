@@ -54,12 +54,12 @@ public interface DbExecutor {
      * @param lqPage
      * @return
      */
-    String getQuerySqlForPage(LQPage lqPage);
+    String getQuerySqlForPage(DBTable dbTable,LQPage lqPage);
 
     /**
      * 将普通的查询sql转换查询总数量的sql
      * @param lqPage
      * @return
      */
-    String getResultCountForQuerySql(LQPage lqPage);
+    String getResultCountForQuerySql(DBTable dbTable,LQPage lqPage);
 }

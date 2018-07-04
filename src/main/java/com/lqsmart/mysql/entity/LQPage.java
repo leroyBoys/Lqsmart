@@ -1,23 +1,21 @@
 package com.lqsmart.mysql.entity;
 
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 
 /**
  * Created by leroy:656515489@qq.com
  * 2018/6/1.
  */
 public class LQPage<T> {
-    private int start;
-    private int end;
     private int pageCurrent = 1;
     private int pageSize;
+    private Map<String,String> conditions = new HashMap<>();//等价匹配
+    private Map<String,String> likeConditions = new HashMap<>();//模糊匹配
+    private LinkedHashMap sortColums = new LinkedHashMap<>();
+
+    private int start;
+    private int end;
     private int count;//总数量
-    private String sql;
-    /** select 语句*/
-    private String selectSql;
-    /**  from语句（除select 语句外的部分） */
-    private String fromSql;
     private List<T> results = new LinkedList<>();
 
     public LQPage() {
@@ -49,56 +47,39 @@ public class LQPage<T> {
         }
     }
 
-    /**
-     *
-     * @param sql
-     * @param uniqueKeyColum 唯一索引 的columName（最好使用id） 如果不设置则不做优化
-     */
-    public void setSql(String sql, String uniqueKeyColum){
-        this.parsetSql(sql,uniqueKeyColum);
+    public Map<String, String> getConditions() {
+        return conditions;
     }
 
-    private void parsetSql(String sql,String uniqueKeyColum){
-        if(this.selectSql != null){
-            return;
-        }
-
-        int idex = sql.indexOf("from");
-        if(idex < 0){
-            idex = sql.toLowerCase().indexOf("from");
-        }
-
-        if(idex < 0){
-            throw new RuntimeException(" cant find from from sql:"+sql);
-        }
-        this.selectSql = sql.substring(0,idex);
-        this.fromSql = sql.substring(idex,sql.length());
-        this.sql = sql;
+    public LinkedHashMap getSortColums() {
+        return sortColums;
     }
 
+    public void setSortColums(LinkedHashMap sortColums) {
+        this.sortColums = sortColums;
+    }
+
+    public void setConditions(Map<String, String> conditions) {
+        this.conditions = conditions;
+    }
 
     public int getPageSize() {
         return pageSize;
     }
 
-    public String getSelectSql() {
-        return selectSql;
-    }
-
-    public String getSql() {
-        return sql;
-    }
-
-    public String getFromSql() {
-
-        return fromSql;
-    }
-
     public void setPageSize(int pageSize) {
-        this.pageSize = pageSize;
+        this.pageSize = Math.min(60,pageSize);
 
         this.start = (pageCurrent-1)*pageSize;
         this.end = pageCurrent*pageSize;
+    }
+
+    public Map<String, String> getLikeConditions() {
+        return likeConditions;
+    }
+
+    public void setLikeConditions(Map<String, String> likeConditions) {
+        this.likeConditions = likeConditions;
     }
 
     public int getCount() {
@@ -120,4 +101,5 @@ public class LQPage<T> {
     public int getEnd() {
         return end;
     }
+
 }

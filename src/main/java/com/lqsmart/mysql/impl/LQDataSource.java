@@ -521,7 +521,6 @@ public class LQDataSource implements SqlDataSource,LQConntion {
     public <T> List<T> ExecuteQueryList(Class<T> cls,String cmd, Object[] p) {
         DBTable dbTable = LQStart.instance.getDBTable(cls);
         if(dbTable == null){
-           // throw new RuntimeException(cls.getSimpleName()+" not config dbentity");
             return ExecuteQueryListForBase(cmd,p);
         }
         return ExecuteQueryList(dbTable,cls,cmd,p);
@@ -594,16 +593,21 @@ public class LQDataSource implements SqlDataSource,LQConntion {
      * @param <T>
      * @return
      */
-    public <T> LQPage ExecuteQueryForPage(Class<T> cls,LQPage page){
+    public <T,Page extends LQPage> Page ExecuteQueryForPage(Class<T> cls,Page  page){
+        DBTable dbTable = LQStart.instance.getDBTable(cls);
+        if(dbTable == null){
+            throw new RuntimeException(cls.getSimpleName()+" not config dbentity");
+        }
+
         DbExecutor dbExecutor = lqDbType.getDbExecutor();
-        Object resultCount = ExecuteQueryOnlyOneValue(dbExecutor.getResultCountForQuerySql(page),null);
-        if(resultCount == null){
+        Integer resultCount = (Integer) ExecuteQueryOnlyOneValue(dbExecutor.getResultCountForQuerySql(dbTable,page),null);
+        if(resultCount == null || resultCount == 0 || page.getStart()>resultCount){
             return page;
         }
 
-        List<T> result =  ExecuteQueryList(cls,dbExecutor.getQuerySqlForPage(page),null);
+        List<T> result =  ExecuteQueryList(dbTable,cls,dbExecutor.getQuerySqlForPage(dbTable,page),null);
         page.setResults(result);
-        page.setCount((int) resultCount);
+        page.setCount(resultCount);
         return page;
     }
 

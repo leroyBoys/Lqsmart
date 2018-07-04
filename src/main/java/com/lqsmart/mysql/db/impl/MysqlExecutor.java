@@ -4,11 +4,8 @@ import com.lqsmart.mysql.compiler.FieldGetProxy;
 import com.lqsmart.mysql.db.DbExecutor;
 import com.lqsmart.mysql.entity.DBTable;
 import com.lqsmart.mysql.entity.LQPage;
-import com.lqsmart.mysql.entity.LQPageOneTable;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by leroy:656515489@qq.com
@@ -145,28 +142,62 @@ public class MysqlExecutor implements DbExecutor{
     }
 
     @Override
-    public String getQuerySqlForPage(LQPage lqPage) {
-      /*  if(lqPage instanceof LQPageOneTable){
-            LQPageOneTable lqPageOneTable = (LQPageOneTable) lqPage;
-            if(lqPageOneTable.getUniqueKeyColum() == null){
-                return lqPageOneTable.getSelectSql()+" "+lqPageOneTable.getFromSql()+" limit "+lqPage.getStart()+","+lqPage.getEnd();
+    public String getQuerySqlForPage(DBTable dbTable,LQPage lqPage) {
+        String sql = "select * ";
+        sql+=getFromSql(dbTable,lqPage);
+        LinkedHashMap<String,String> sorts = lqPage.getSortColums();
+        if(!sorts.isEmpty()){
+            int i = 0;
+            for(Map.Entry<String,String> columEntry:sorts.entrySet()){
+                if(i++ == 0){
+                    sql+=" order by "+columEntry.getKey()+"  "+columEntry.getValue();
+                }else {
+                    sql+=" , "+columEntry.getKey()+"  "+columEntry.getValue();
+                }
             }
+        }
+        sql+=" limit "+lqPage.getStart()+","+lqPage.getEnd();
+        return sql;
+    }
 
-            return  lqPageOneTable.getSelectSql()+" from "+lqPageOneTable.getTableName()+" a JOIN (select "+lqPageOneTable.getUniqueKeyColum()
-                    +" "+lqPageOneTable.getFromSql()+" limit "+lqPage.getStart()+","+lqPage.getEnd()
-                    +") b on a."+lqPageOneTable.getUniqueKeyColum()+" = b."+lqPageOneTable.getUniqueKeyColum();
-        }*/
+    protected String getFromSql(DBTable dbTable,LQPage lqPage){
+        String fromSql = " from "+dbTable.getName();
+        Map<String, String> conditions = lqPage.getConditions();
+        int i = 0;
+        if(conditions != null && !conditions.isEmpty()){
+            for(Map.Entry<String,String> entry:conditions.entrySet()){
+                if(dbTable.getColumInit(entry.getKey()) == null){
+                    continue;
+                }
+                if(i++ == 0){
+                    fromSql+=" where ";
+                }else {
+                    fromSql+=" and ";
+                }
+                fromSql += "  "+entry.getKey()+" = '"+entry.getValue()+"'";
+            }
+        }
 
-        return lqPage.getSql()+" limit "+lqPage.getStart()+","+lqPage.getEnd();
+        conditions = lqPage.getLikeConditions();
+        if(conditions != null && !conditions.isEmpty()){
+            for(Map.Entry<String,String> entry:conditions.entrySet()){
+                if(dbTable.getColumInit(entry.getKey()) == null){
+                    continue;
+                }
+                if(i++ == 0){
+                    fromSql+=" where ";
+                }else {
+                    fromSql+=" and ";
+                }
+                fromSql += "  "+entry.getKey()+" like '%"+entry.getValue()+"%'";
+            }
+        }
+
+        return fromSql;
     }
 
     @Override
-    public String getResultCountForQuerySql(LQPage lqPage) {
-       /* if(lqPage instanceof LQPageOneTable){
-            LQPageOneTable lqPageOneTable = (LQPageOneTable) lqPage;
-            return  "SELECT COUNT(1) " +lqPageOneTable.getFromSql();
-        }*/
-
-        return  "SELECT COUNT(1) " +lqPage.getFromSql();
+    public String getResultCountForQuerySql(DBTable dbTable,LQPage lqPage) {
+        return  "SELECT COUNT(1) " +getFromSql(dbTable,lqPage);
     }
 }
