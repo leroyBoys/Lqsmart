@@ -607,7 +607,7 @@ public class LQDataSource implements SqlDataSource,LQConntion {
 
         List<T> result =  ExecuteQueryList(dbTable,cls,dbExecutor.getQuerySqlForPage(dbTable,page),null);
         page.setResults(result);
-        page.setAllAount(resultCount.intValue());
+        page.setAllCount(resultCount.intValue());
         return page;
     }
 

@@ -15,7 +15,7 @@ public class LQPage<T> {
 
     private int start;
     private int end;
-    private int allAount;//总数量
+    private int allCount;//总数量
     private List<T> results = new LinkedList<>();
 
     public LQPage() {
@@ -84,12 +84,12 @@ public class LQPage<T> {
         this.likeConditions = likeConditions;
     }
 
-    public int getAllAount() {
-        return allAount;
+    public int getAllCount() {
+        return allCount;
     }
 
-    public void setAllAount(int allAount) {
-        this.allAount = allAount;
+    public void setAllCount(int allCount) {
+        this.allCount = allCount;
     }
 
     public int getStart() {
