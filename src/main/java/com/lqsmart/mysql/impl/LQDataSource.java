@@ -600,14 +600,14 @@ public class LQDataSource implements SqlDataSource,LQConntion {
         }
 
         DbExecutor dbExecutor = lqDbType.getDbExecutor();
-        Integer resultCount = (Integer) ExecuteQueryOnlyOneValue(dbExecutor.getResultCountForQuerySql(dbTable,page),null);
+        Long resultCount = (Long) ExecuteQueryOnlyOneValue(dbExecutor.getResultCountForQuerySql(dbTable,page),null);
         if(resultCount == null || resultCount == 0 || page.getStart()>resultCount){
             return page;
         }
 
         List<T> result =  ExecuteQueryList(dbTable,cls,dbExecutor.getQuerySqlForPage(dbTable,page),null);
         page.setResults(result);
-        page.setCount(resultCount);
+        page.setAllAount(resultCount.intValue());
         return page;
     }
 

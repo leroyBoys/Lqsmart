@@ -8,17 +8,19 @@ import java.util.*;
  */
 public class LQPage<T> {
     private int pageCurrent = 1;
-    private int pageSize;
+    private int pageSize=5;
     private Map<String,String> conditions = new HashMap<>();//等价匹配
     private Map<String,String> likeConditions = new HashMap<>();//模糊匹配
     private LinkedHashMap sortColums = new LinkedHashMap<>();
 
     private int start;
     private int end;
-    private int count;//总数量
+    private int allAount;//总数量
     private List<T> results = new LinkedList<>();
 
     public LQPage() {
+        this.setPageCurrent(pageCurrent);
+        this.setPageSize(pageSize);
     }
 
     public LQPage(int pageCurrent, int pageSize) {
@@ -68,7 +70,7 @@ public class LQPage<T> {
     }
 
     public void setPageSize(int pageSize) {
-        this.pageSize = Math.min(60,pageSize);
+        this.pageSize = Math.min(100,pageSize);
 
         this.start = (pageCurrent-1)*pageSize;
         this.end = pageCurrent*pageSize;
@@ -82,12 +84,12 @@ public class LQPage<T> {
         this.likeConditions = likeConditions;
     }
 
-    public int getCount() {
-        return count;
+    public int getAllAount() {
+        return allAount;
     }
 
-    public void setCount(int count) {
-        this.count = count;
+    public void setAllAount(int allAount) {
+        this.allAount = allAount;
     }
 
     public int getStart() {
